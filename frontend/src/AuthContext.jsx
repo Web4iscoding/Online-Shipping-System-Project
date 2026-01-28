@@ -23,7 +23,7 @@ export const AuthProvider = ({ children }) => {
           const userData = await authApi.getMe();
           setUser(userData.user);
           setUserType(userData['user_type']);
-          localStorage.setItem('userType', userData.userType);
+          const item = localStorage.setItem('userType', userData['user_type']);
         } catch (err) {
           console.error('Failed to load user:', err);
           // Token might be invalid, clear it
@@ -67,10 +67,10 @@ export const AuthProvider = ({ children }) => {
 
         // Store token and user info
         localStorage.setItem('token', response.token);
-        localStorage.setItem('userType', response.userType);
+        localStorage.setItem('userType', response['userType']);
         setToken(response.token);
         setUser(response.user);
-        setUserType(response.userType);
+        setUserType(response['userType']);
 
         return response;
       } catch (err) {
@@ -88,10 +88,10 @@ export const AuthProvider = ({ children }) => {
 
       // Store token and user info
       localStorage.setItem('token', response.token);
-      localStorage.setItem('userType', response.userType);
+      localStorage.setItem('userType', response['userType']);
       setToken(response.token);
       setUser(response.user);
-      setUserType(response.userType);
+      setUserType(response['userType']);
 
       return response;
     } catch (err) {
