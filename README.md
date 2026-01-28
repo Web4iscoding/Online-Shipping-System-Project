@@ -98,46 +98,48 @@ Online-Shipping-System-Project/
 
 ---
 
-### API Base URL
-```
-http://localhost:8000/api/
-```
+User Authentication
+/auth/register/customer/
+/auth/register/vendor/
+/auth/login
+/auth/logout/
+/auth/me/
 
-### Main Endpoints
+Product APIs
+/products/?page=${}&search=${}&ordering=${}
+/products/${}
+/products/by_brand/?brand_id=${brandID}
+/products/by_category/?category_id=${categoryID}
+/products/by_store/?store_id=${storeID}
+/products/on_sale/
 
-#### Authentication
-```
-POST   /api/token/           - Get authentication token
-POST   /api/token/refresh/   - Refresh token
-```
+Brands & Categories
+/brands/
+/categories/
+/stores/
 
-#### Products
-```
-GET    /api/products/        - List all products
-GET    /api/products/{id}/   - Get product details
-```
+Cart
+/cart/
+/cart/remove_item/?productID=${}
+/cart/clear_cart/
 
-#### Vendor Store Management
-```
-GET    /api/vendor-stores/my-store/           - Get vendor's store
-GET    /api/vendor-stores/my-products/        - Get vendor's products
-POST   /api/vendor-stores/create_product/     - Create new product
-PUT    /api/vendor-stores/update_product/     - Update product
-DELETE /api/vendor-stores/delete_product/     - Delete product
-GET    /api/vendor-stores/sales-summary/      - Get sales statistics
-```
+Order
+/orders/
+/orders/${}
+/orders/${}/cancel_order/
 
-#### Shopping Cart
-```
-GET    /api/cart/            - Get cart items
-POST   /api/cart/            - Add to cart
-PUT    /api/cart/{id}/       - Update cart item
-DELETE /api/cart/{id}/       - Remove from cart
-```
 
-#### Orders
-```
-GET    /api/orders/          - Get user's orders
-POST   /api/orders/          - Create new order
-GET    /api/orders/{id}/     - Get order details
-```
+Wishlist
+/wishlist/
+/wishlist/remove_item/?productID=${}
+
+Reviews
+/reviews/
+
+Vendor
+/vendor/my_store/
+/vendor/my_products/
+/vendor/sales_summary/
+/vendor/create_product/
+/vendor/update_product/
+/vendor/delete_product/
