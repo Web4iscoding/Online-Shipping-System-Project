@@ -1,0 +1,58 @@
+/**
+ * Navigation Component Styles
+ */
+
+.navbar * {
+  /* border: 1px solid red; */
+}
+
+.navbar {
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+}
+
+.navbar-container * {
+  color: var(--primary-color-darker);
+}
+
+.site-logo {
+  font-size: 30px;
+  font-family: "Inter", sans-serif;
+  font-weight: 900;
+}
+
+.navbar-container {
+  max-width: var(--max-width);
+  margin: 0 auto;
+  padding: 0 32px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  height: 60px;
+}
+
+.navbar-links {
+  display: flex;
+  gap: 32px;
+  font-size: 14px;
+}
+
+.navbar-links > *:hover {
+  text-decoration: underline;
+}
+
+.navbar-user-menu {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+.navbar-user-menu > * {
+  
+}
+
+.navbar-user-menu > *:hover {
+  cursor: pointer;
+}
+
+
+
