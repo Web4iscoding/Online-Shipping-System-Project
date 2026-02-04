@@ -24,9 +24,6 @@ import { wishlist, vendor } from "./api";
 import ProductList from "./components/products/ProductList";
 import ProductDetail from "./components/products/ProductDetail";
 
-// Cart and Wishlist pages
-import Cart from "./components/cart/Cart";
-import Wishlist from "./components/wishlist/Wishlist";
 
 import { useEffect } from "react";
 import { apiCall } from "./api";
