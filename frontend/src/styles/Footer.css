@@ -1,0 +1,31 @@
+.footer-container {
+  border-top: 1px solid var(--primary-color-light);
+  max-width: 1200px;
+  padding: var(--desktop-padding);
+  margin: 64px auto;
+  text-align: center;
+}
+
+.footer-container,
+.footer-container * {
+  /* border: 1px solid red; */
+  font-size: 12px;
+  line-height: 2.5;
+}
+
+.footer-container p:hover {
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+.footer-container h4 {
+  font-weight: 400;
+  font-size: 16px;
+  margin-bottom: 8px;
+}
+
+.footer-info-parent {
+  display: flex;
+  justify-content: center;
+  gap: 16px;
+}

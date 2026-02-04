@@ -1,0 +1,19 @@
+.loading-indicator {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.loading-indicator * {
+  color: var(--primary-color-light);
+}
+
+.loading-indicator svg {
+  display: block;
+  animation: rotate 1s linear infinite;
+  transform-origin: center;
+}

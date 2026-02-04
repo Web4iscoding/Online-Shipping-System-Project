@@ -148,6 +148,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'error': 'brand_id required'}, status=status.HTTP_400_BAD_REQUEST)
         
         products = self.get_queryset().filter(brand_id=brand_id)
+        page = self.paginate_queryset(products)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -159,6 +163,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'error': 'category_id required'}, status=status.HTTP_400_BAD_REQUEST)
         
         products = self.get_queryset().filter(category_id=category_id)
+        page = self.paginate_queryset(products)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -170,6 +178,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
             return Response({'error': 'store_id required'}, status=status.HTTP_400_BAD_REQUEST)
         
         products = self.get_queryset().filter(storeID_id=store_id)
+        page = self.paginate_queryset(products)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -177,6 +189,10 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     def on_sale(self, request):
         """Get products with active promotions."""
         products = self.get_queryset().filter(promotions__status='Active')
+        page = self.paginate_queryset(products)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -492,6 +508,16 @@ class VendorStoreViewSet(viewsets.ViewSet):
         products = store.products.select_related(
             'brand', 'category', 'storeID'
         ).prefetch_related('media', 'promotions')
+        
+
+        search_query = request.query_params.get('search', '').strip()
+        if search_query:
+            products = products.filter(
+                Q(productName__icontains=search_query) |
+                Q(description__icontains=search_query) |
+                Q(brand__brandName__icontains=search_query) |
+                Q(category__categoryName__icontains=search_query)
+            )
         serializer = ProductDetailSerializer(products, many=True)
         return Response(serializer.data)
 
@@ -513,7 +539,10 @@ class VendorStoreViewSet(viewsets.ViewSet):
 
     @action(detail=False, methods=['PUT'])
     def update_product(self, request):
-        """Update an existing product in vendor's store."""
+        """
+        Partial update of an existing product.
+        Although this uses PUT, it behaves like PATCH. (See partial=True)
+        """
         vendor = self.get_vendor(request)
         store = get_object_or_404(Store, vendorID=vendor)
         

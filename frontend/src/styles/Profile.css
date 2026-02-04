@@ -1,0 +1,90 @@
+.profile-container,
+.profile-container * {
+  /* border: 1px solid red; */
+}
+
+.profile-container h2,
+.profile-container h3 {
+  font-weight: 400;
+}
+
+.profile-container {
+  padding: 0 var(--desktop-padding);
+  margin: 32px auto;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  max-width: var(--max-width);
+  gap: 16px;
+}
+
+.profile-header {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+}
+
+.avatar {
+  width: 80px;
+  height: 80px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--primary-color-lighter);
+}
+
+.profile-card-container {
+  display: flex;
+  gap: 16px;
+  width: 100%;
+  justify-content: space-between;
+}
+
+.profile-card {
+  appearance: none;
+  flex: 1;
+  height: 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 16px;
+  background: none;
+
+  font: inherit;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+  border: 1px solid var(--primary-color-light);
+}
+
+.profile-card:hover {
+  border: 1px solid var(--primary-color);
+}
+
+.profile-card p {
+  color: var(--primary-color-dark);
+}
+
+.profile-card-title {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.profile-container .logout {
+  background: none;
+  font: inherit;
+  color: inherit;
+  text-align: center;
+  cursor: pointer;
+  width: 100%;
+  height: 50px;
+  border: 1px solid var(--primary-color-light);
+}
+
+.profile-container .logout:hover {
+  border: 1px solid var(--primary-color);
+}

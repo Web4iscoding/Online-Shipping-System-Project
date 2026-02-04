@@ -1,0 +1,252 @@
+.homepage-container,
+.homepage-container * {
+  /* border: 1px solid red; */
+}
+
+.brand-cards-container,
+.brand-cards-container * {
+  /* border: 1px solid red; */
+}
+
+.brand-cards-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 0 var(--desktop-padding);
+  gap: 16px;
+  max-width: 1600px;
+  margin: 32px auto;
+}
+
+.brand-cards-container > * {
+  flex: 1;
+}
+
+.big-brand-card {
+  height: 350px;
+  padding: 16px;
+  position: relative;
+  background-image: url("../assets/homepage_main.png");
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+  border-radius: 25px;
+}
+
+.big-brand-card h1 {
+  letter-spacing: 2px;
+  font-weight: 200;
+  color: var(--primary-color-darker);
+}
+
+.liquid-glass-button-text {
+  font: inherit;
+  font-size: 16px;
+  font-weight: 400;
+  color: var(--primary-color-lighter);
+}
+
+.decorative-banner {
+  height: 50px;
+}
+
+.small-brand-cards-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.small-brand-cards-container > div {
+  display: flex;
+  gap: 16px;
+}
+
+.small-brand-cards-container > div div,
+.small-brand-cards-container > div a {
+  flex: 1;
+  height: calc((350px - 16px) / 2);
+  border-radius: 25px;
+  border: 1px solid var(--primary-color-lighter);
+  overflow: hidden;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  text-decoration: none;
+}
+
+.small-brand-cards-container > div div img,
+.small-brand-cards-container > div a img {
+  transform: scale(1);
+  transition: transform 0.5s ease;
+}
+
+.small-brand-cards-container > div div:hover img,
+.small-brand-cards-container > div a:hover img {
+  transform: scale(1.1);
+}
+
+#small-brand-card-2 img {
+  object-fit: contain;
+  width: 80%;
+  height: 80%;
+}
+
+#small-brand-card-3 img {
+  object-fit: contain;
+  width: 80%;
+  height: 80%;
+}
+
+#small-brand-card-4 img {
+  object-fit: contain;
+  width: 70%;
+  height: 80%;
+}
+
+.small-brand-cards-container > div div img,
+.small-brand-cards-container > div a img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.marquee {
+  width: 100vw;
+  overflow: hidden;
+  height: 200px;
+  border-top: 1px solid var(--primary-color-light);
+  border-bottom: 1px solid var(--primary-color-light);
+}
+
+.track {
+  display: flex;
+  height: 100%;
+  width: 200vw;
+  animation: scroll-left 45s linear infinite;
+}
+
+.item {
+  flex: 1 0 calc(100vw / 4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.item > img {
+  height: 100%;
+}
+
+.newest-items-container,
+.newest-items-container * {
+  /* border: 1px solid red; */
+}
+
+.newest-items-container {
+  position: relative;
+  display: flex;
+  padding: 0 var(--desktop-padding);
+  margin: 32px auto;
+  max-width: 1200px;
+  align-items: flex-start;
+  gap: 64px;
+}
+
+.newest-items-left {
+  margin-top: 32px;
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
+  justify-content: space-around;
+}
+
+.newest-items-left h2 {
+  font-size: 48px;
+  font-weight: 400;
+}
+
+.newest-items-left button {
+  margin-top: 16px;
+  appearance: none;
+  font: inherit;
+  font-size: 14px;
+  background-color: white;
+  padding: 8px;
+  cursor: pointer;
+  border: 2px solid var(--primary-color-darker);
+}
+
+.newest-items-left button:hover {
+  background-color: var(--primary-color-darker);
+  color: white;
+}
+
+.newest-items-list {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: hidden;
+  gap: 16px;
+  width: 100%;
+}
+
+.product-card {
+  flex: 0 0 200px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.product-card-image-container {
+  height: 250px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  appearance: none;
+  border: 1px solid var(--primary-color-lighter);
+  cursor: pointer;
+}
+
+.product-card-image-container img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+.product-card-title {
+  text-align: center;
+  cursor: pointer;
+}
+
+.next-button {
+  position: absolute;
+  display: flex;
+  justify-content: center;
+  border: none;
+  align-items: center;
+  height: 50px;
+  width: 50px;
+  background-color: var(--primary-color-lighter);
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+  opacity: 60%;
+  right: calc(32px - 25px);
+  top: calc(50% - 25px - 32px);
+  z-index: 1;
+  cursor: pointer;
+}
+
+.next-button:hover {
+  opacity: 90%;
+}
+
+.next-button:active {
+  transform: translateY(1px);
+}
+
+@keyframes scroll-left {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-100vw);
+  }
+}

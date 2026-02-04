@@ -1,0 +1,155 @@
+.catalog-container,
+.catalog-container * {
+  /* border: 1px solid red; */
+  font-weight: 400;
+}
+
+.catalog-container {
+  padding: 0 var(--desktop-padding);
+  margin: 32px auto;
+  max-width: var(--max-width);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.catalog-container button {
+  appearance: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#catalog-revert-button {
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+  max-width: 126px;
+  border: none;
+}
+
+.catalog-utility-bar {
+  display: flex;
+  gap: 32px;
+}
+
+.catalog-search-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+.catalog-search-wrapper > input {
+  width: 100%;
+  font-size: 14px;
+  padding: 16px 8px 16px 51px;
+  border-radius: 25px;
+  border: none;
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+}
+
+.catalog-search-wrapper > input {
+  outline: none;
+}
+
+.catalog-search-wrapper > input::placeholder {
+  color: var(--primary-color-light);
+}
+
+.catalog-search-wrapper > input:hover,
+.catalog-add:hover {
+  outline: 1px solid var(--primary-color-light);
+}
+
+.catalog-search-wrapper > input:focus,
+.catalog-add:active {
+  outline: 1px solid var(--primary-color);
+}
+
+.catalog-add {
+  border: none;
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+  border-radius: 50%;
+  min-width: 50px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.catalog-card-container {
+  display: flex;
+  gap: 16px;
+  flex-direction: column;
+}
+
+.catalog-card {
+  position: relative;
+  border: 1px solid var(--primary-color-light);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.catalog-card:hover {
+  border: 1px solid var(--primary-color);
+}
+
+.catalog-hidden-button {
+  position: absolute;
+  right: 16px;
+  border: none;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.catalog-hidden-button * {
+  color: var(--primary-color-light);
+}
+
+.catalog-hidden-button:hover *,
+#catalog-delete-button:hover {
+  color: var(--primary-color-dark);
+}
+
+#catalog-delete-button {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  font-size: 16px;
+  text-decoration: underline;
+  border: none;
+  color: var(--primary-color-light);
+}
+
+.catalog-card-title span {
+  font-size: 16px;
+  color: var(--primary-color);
+}
+
+.catalog-card-content {
+  display: flex;
+  gap: 16px;
+}
+
+.catalog-card-content p {
+  color: var(--primary-color-light);
+  font-size: 16px;
+}
+
+.catalog-card-content > img {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  border: 1px solid var(--primary-color-lighter);
+}
+
+.hidden {
+  opacity: 0.2;
+}

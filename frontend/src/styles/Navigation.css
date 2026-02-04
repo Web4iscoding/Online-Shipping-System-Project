@@ -8,22 +8,28 @@
 
 .navbar {
   box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 64px;
+  z-index: 1000;
+  background-color: white;
 }
 
 .navbar-container * {
-  color: var(--primary-color-darker);
 }
 
 .site-logo {
-  font-size: 30px;
   font-family: "Inter", sans-serif;
   font-weight: 900;
+  color: black;
 }
 
 .navbar-container {
   max-width: var(--max-width);
   margin: 0 auto;
-  padding: 0 32px;
+  padding: 0 var(--desktop-padding);
   display: flex;
   justify-content: space-between;
   align-items: center;
@@ -38,6 +44,7 @@
 
 .navbar-links > *:hover {
   text-decoration: underline;
+  cursor: pointer;
 }
 
 .navbar-user-menu {
@@ -47,12 +54,9 @@
 }
 
 .navbar-user-menu > * {
-  
 }
 
 .navbar-user-menu > *:hover {
   cursor: pointer;
+  color: var(--primary-color-lighter);
 }
-
-
-

@@ -30,6 +30,8 @@ class Vendor(models.Model):
     vendorID = models.AutoField(primary_key=True)
     user = models.OneToOneField(User, on_delete=models.CASCADE, related_name='vendor_profile')
     phoneNo = models.CharField(max_length=20, blank=False)
+    firstName = models.CharField(max_length=50, blank=False)
+    lastName = models.CharField(max_length=50, blank=False)
     profileImage = models.ImageField(upload_to='vendor_profiles/', blank=True, null=True)
     createdTime = models.DateTimeField(auto_now_add=True)
 

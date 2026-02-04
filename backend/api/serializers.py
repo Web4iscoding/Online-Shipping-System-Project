@@ -45,6 +45,16 @@ class CustomerRegisterSerializer(serializers.Serializer):
         # Create Token
         Token.objects.create(user=user)
         return customer
+    
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Username already exists.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already exists.")
+        return value
 
 
 class VendorRegisterSerializer(serializers.Serializer):
@@ -53,7 +63,11 @@ class VendorRegisterSerializer(serializers.Serializer):
     email = serializers.EmailField()
     password = serializers.CharField(write_only=True, min_length=6)
     phoneNo = serializers.CharField(max_length=20, required=False, allow_blank=True)
-    profileImage = serializers.ImageField(required=False, allow_null=True)
+    # profileImage = serializers.ImageField(required=False, allow_null=True)
+    storeName = serializers.CharField(max_length=100)
+    firstName = serializers.CharField(max_length=100, required=False, allow_blank=True)
+    lastName = serializers.CharField(max_length=100, required=False, allow_blank=True)
+
 
     def create(self, validated_data):
         # Create Django User
@@ -66,22 +80,52 @@ class VendorRegisterSerializer(serializers.Serializer):
         vendor = Vendor.objects.create(
             user=user,
             phoneNo=validated_data.get('phoneNo', ''),
-            profileImage=validated_data.get('profileImage', None)
+            firstName=validated_data.get('firstName', ''),
+            lastName=validated_data.get('lastName', '')
+            # profileImage=validated_data.get('profileImage', None)
+        )
+        store = Store.objects.create(
+            vendorID=vendor,
+            storeName=validated_data.get('storeName', '')
         )
         # Create Token
         Token.objects.create(user=user)
         return vendor
+    
+    def validate_username(self, value):
+        if User.objects.filter(username=value).exists():
+            raise serializers.ValidationError("Username already exists.")
+        return value
+
+    def validate_email(self, value):
+        if User.objects.filter(email=value).exists():
+            raise serializers.ValidationError("Email already exists.")
+        return value
 
 
 class LoginSerializer(serializers.Serializer):
 
-    username = serializers.CharField()
+    email = serializers.EmailField()
     password = serializers.CharField(write_only=True)
 
     def validate(self, data):
-        user = authenticate(username=data['username'], password=data['password'])
-        if not user:
+        email = data.get('email')
+        password = data.get('password')
+        
+        # Find user by email
+        try:
+            user = User.objects.get(email=email)
+        except User.DoesNotExist:
             raise serializers.ValidationError("Invalid credentials")
+        
+        # Check password
+        if not user.check_password(password):
+            raise serializers.ValidationError("Invalid credentials")
+        
+        # Check if user is active
+        if not user.is_active:
+            raise serializers.ValidationError("User account is disabled")
+        
         data['user'] = user
         return data
 
@@ -111,7 +155,7 @@ class VendorSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Vendor
-        fields = ['vendorID', 'user', 'phoneNo', 'profileImage', 'createdTime']
+        fields = ['vendorID', 'user', 'firstName', 'lastName', 'phoneNo', 'profileImage', 'createdTime']
         read_only_fields = ['vendorID', 'createdTime']
 
     def get_user(self, obj):
@@ -156,10 +200,11 @@ class StoreSerializer(serializers.ModelSerializer):
 
     photos = StorePhotoSerializer(many=True, read_only=True)
     vendor_username = serializers.CharField(source='vendorID.user.username', read_only=True)
+    vendor_profileImage = serializers.CharField(source='vendorID.profileImage', read_only=True)
 
     class Meta:
         model = Store
-        fields = ['storeID', 'vendor_username', 'storeName', 'description', 'photos', 'createdTime']
+        fields = ['storeID', 'vendor_username', 'vendor_profileImage', 'storeName', 'description', 'photos', 'createdTime']
         read_only_fields = ['storeID', 'createdTime']
 
 
@@ -194,7 +239,7 @@ class ProductListSerializer(serializers.ModelSerializer):
 
     def get_primary_image(self, obj):
         media = obj.media.filter(isPrimary=True).first()
-        return media.mediaURL if media else None
+        return media.mediaURL.url if media else None
 
     def get_discount_rate(self, obj):
         promo = obj.promotions.filter(status='Active').first()
@@ -222,7 +267,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         fields = [
             'productID', 'productName', 'description', 'price', 'quantity',
             'availability', 'brand_name', 'category_name', 'store',
-            'media', 'discount_rate', 'discounted_price', 'createdTime', 'updatedTime'
+            'media', 'discount_rate', 'discounted_price', 'createdTime', 'updatedTime', 'isHidden'
         ]
         read_only_fields = ['productID', 'createdTime', 'updatedTime']
 

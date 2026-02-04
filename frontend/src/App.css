@@ -3,12 +3,6 @@
  */
 
 :root {
-  --primary-color: hsl(0, 0%, 58%);
-  --primary-color-dark: hsl(0, 0%, 43%);
-  --primary-color-darker: hsl(0, 0%, 28%);
-  --primary-color-light: hsl(0, 0%, 76%);
-  --primary-color-lighter: hsl(0, 0%, 88%);
-
   /* --primary-dark: #764ba2;
   --secondary-color: #f0f0f0;
   --text-dark: #333;
@@ -17,6 +11,23 @@
   --success-color: #4caf50;
   --error-color: #f44336;
   --warning-color: #ff9800; */
+  --react-international-phone-background-color: white;
+  --react-international-phone-font-size: 14px;
+  --react-international-phone-text-color: var(--primary-color-darker);
+  --react-international-phone-border-color: var(--primary-color-light);
+  --react-international-phone-disabled-text-color: var(--primary-color-darker);
+  --react-international-phone-border-radius: 0px;
+  --react-international-phone-country-selector-background-color-hover: var(
+    --primary-color-lighter
+  );
+  --react-international-phone-country-selector-arrow-color: var(
+    --primary-color
+  );
+  --react-international-phone-dropdown-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+  --react-international-phone-selected-dropdown-item-background-color: white;
+  --react-international-phone-dropdown-item-dial-code-color: var(
+    --primary-color
+  );
 }
 
 * {
@@ -32,17 +43,24 @@ body,
   height: 100%;
 }
 
-body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-  background: #f5f5f5;
+.main-content {
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+  padding-top: 60px;
+  min-height: calc(100vh - 60px);
 }
 
-.app {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
+.main-content::-webkit-scrollbar {
+  display: none;
+}
+
+body {
+  font-family:
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
+    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: white;
 }

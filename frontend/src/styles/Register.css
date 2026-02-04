@@ -1,0 +1,65 @@
+.register-container * {
+  /* border: 1px solid red; */
+}
+
+.register-form {
+  max-width: 500px;
+  margin: 32px auto;
+  padding: 0 var(--desktop-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.register-form h1 {
+  font-weight: 300;
+  text-align: center;
+}
+
+.input-field {
+  display: flex;
+  flex-direction: column;
+  font-size: 14px;
+  gap: 4px;
+}
+
+.input-field input {
+  appearance: none;
+  padding: 8px;
+  font-size: 14px;
+  border: 1px solid var(--primary-color-light);
+}
+
+.name-fields {
+  display: flex;
+  justify-content: space-between;
+  gap: 16px;
+}
+
+.name-fields > * {
+  flex: 1;
+  min-width: 0;
+}
+
+.input-field input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.register-form button {
+  padding: 12px;
+}
+
+.register-button {
+  background: var(--primary-color-darker);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+}
+
+.shipping-address-label + input,
+.shipping-address-label + input + input {
+  margin-bottom: 8px;
+}
