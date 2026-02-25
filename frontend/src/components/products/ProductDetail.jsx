@@ -8,8 +8,8 @@ import {
   LeftArrowIcon,
   RightArrowIcon,
 } from "../../assets/icons";
-import gucci from "../../assets/gucci.png";
-import { products as productAPI, API_BASE } from "../../api";
+import noImage from "../../assets/no_image_available.jpg";
+import { products as productAPI, cart as cartAPI, API_BASE } from "../../api";
 import blank_pfp from "../../assets/blank_pfp.png";
 import { useAuth } from "../../AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -20,17 +20,23 @@ const ProductDetail = () => {
   const [currentPictureIndex, setCurrentPictureIndex] = useState(0);
   const [quantity, setQuantity] = useState(1);
   const { id } = useParams();
-  const { isAuthenticated, isVendor } = useAuth();
+  const { isAuthenticated, isVendor, isCustomer } = useAuth();
   const navigate = useNavigate();
 
   useEffect(() => {
     async function performFetch() {
       const product = await productAPI.detail(id);
       setProduct(product);
+      console.log(product);
       setProductPictures(product.media);
     }
     performFetch();
   }, [id]);
+
+  const handleAddToCart = async () => {
+    await cartAPI.addItem(product.productID, quantity);
+    navigate("/cart");
+  };
 
   return (
     <div className="product-detail-container">
@@ -69,12 +75,12 @@ const ProductDetail = () => {
             >
               {(product?.media?.length
                 ? product.media
-                : [{ mediaURL: gucci }]
+                : [{ mediaURL: noImage }]
               ).map((media, index) => (
                 <img
                   key={media.mediaID || index}
                   className="product-detail-image"
-                  src={media.mediaURL ? `${media.mediaURL}` : gucci}
+                  src={media.mediaURL ? `${media.mediaURL}` : noImage}
                   alt={`Product ${index + 1}`}
                 />
               ))}
@@ -136,11 +142,13 @@ const ProductDetail = () => {
         <div className="product-detail-action-buttons">
           <button
             id="add-to-cart-button"
-            className={isVendor ? "disabled" : ""}
-            disabled={isVendor}
+            className={isVendor || product.quantity === 0 ? "disabled" : ""}
+            disabled={isVendor || product.quantity === 0}
             onClick={() => {
-              if (!isAuthenticated)
-                navigate("/login");
+              if (!isAuthenticated) navigate("/login");
+              else if (isCustomer) {
+                handleAddToCart();
+              }
             }}
           >
             <p>Add to Cart</p>
@@ -150,8 +158,7 @@ const ProductDetail = () => {
             className={isVendor ? "disabled" : ""}
             disabled={isVendor}
             onClick={() => {
-              if (!isAuthenticated)
-                navigate("/login");
+              if (!isAuthenticated) navigate("/login");
             }}
           >
             <HeartIcon />

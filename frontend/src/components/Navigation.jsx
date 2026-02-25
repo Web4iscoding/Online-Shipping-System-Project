@@ -6,6 +6,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../AuthContext";
+import { API_BASE } from "../api";
 import "../styles/Navigation.css";
 import {
   BellIcon,
@@ -14,6 +15,7 @@ import {
   AccountIcon,
   CartIcon,
 } from "../assets/icons";
+import blank_pfp from "../assets/blank_pfp.png";
 
 export const Navigation = () => {
   const { isAuthenticated, user, logout, isVendor } = useAuth();
@@ -50,23 +52,39 @@ export const Navigation = () => {
           >
             <SearchIcon size={0.8} />
           </Link>
-          <Link
-            style={{ display: "flex" }}
-            to={isAuthenticated ? "/wishlist" : "/login"}
-          >
-            <HeartIcon size={0.8} />
-          </Link>
+          {!isVendor && (
+            <Link
+              style={{ display: "flex" }}
+              to={isAuthenticated ? "/wishlist" : "/login"}
+            >
+              <HeartIcon size={0.8} />
+            </Link>
+          )}
+          {!isVendor && (
+            <Link
+              style={{ display: "flex" }}
+              to={isAuthenticated ? "/cart" : "/login"}
+            >
+              <CartIcon size={0.8} />
+            </Link>
+          )}
           <Link
             style={{ display: "flex" }}
             to={isAuthenticated ? "/profile" : "/login"}
           >
-            <AccountIcon size={0.8} />
-          </Link>
-          <Link
-            style={{ display: "flex" }}
-            to={isAuthenticated ? "/cart" : "/login"}
-          >
-            <CartIcon size={0.8} />
+            {isAuthenticated ? (
+              <img
+                src={
+                  user?.profileImage
+                    ? `${API_BASE}${user.profileImage}`
+                    : blank_pfp
+                }
+                alt="Profile"
+                className="nav-avatar"
+              />
+            ) : (
+              <AccountIcon size={0.8} />
+            )}
           </Link>
         </div>
       </div>

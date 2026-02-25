@@ -25,7 +25,15 @@
   --success-color-dark: hsl(131 50% 50%);
   --success-color-darker: hsl(131 93.2% 8.1%);
   --success-color-light: hsl(131 71.1% 74.8%);
-  --sucess-color-lighter: hsl(131 90.5% 92.2%);
+  --success-color-lighter: hsl(131 90.5% 92.2%);
+
+  --caution-color: hsl(57 50% 50%);
+  --caution-color-dark: hsl(57 72.1% 27%);
+  --caution-color-darker: hsl(57 93.2% 14.6%);
+  --caution-color-light: hsl(57 79.5% 63.8%);
+  --caution-color-lighter: hsl(57 93% 81%);
+
+  --default-box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
 
   --max-width: 1200px;
   --desktop-padding: 32px;

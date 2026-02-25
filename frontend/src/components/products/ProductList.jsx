@@ -1,5 +1,5 @@
 import { useParams } from "react-router-dom";
-import gucci from "../../assets/gucci.png";
+import noImage from "../../assets/no_image_available.jpg";
 import { useState, useEffect } from "react";
 import {
   products as productsAPI,
@@ -215,7 +215,7 @@ const ProductList = () => {
                 thumbnailURL={
                   product["primary_image"]
                     ? `${API_BASE}/${product["primary_image"]}`
-                    : gucci
+                    : noImage
                 }
                 productName={product.productName}
                 productID={product.productID}

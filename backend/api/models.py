@@ -15,6 +15,7 @@ class Customer(models.Model):
     shippingAddress1 = models.TextField(blank=False)
     shippingAddress2 = models.TextField(blank=False)
     shippingAddress3 = models.TextField(blank=False)
+    profileImage = models.ImageField(upload_to='customer_profiles/', blank=True, null=True)
     createdTime = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -160,17 +161,34 @@ class CartItem(models.Model):
 
 # Represents a customer's order.
 class Order(models.Model):
+    STATUS_CHOICES = [
+        ('Pending', 'Pending'),
+        ('Holding', 'Holding'),
+        ('Shipped', 'Shipped'),
+        ('Cancelled', 'Cancelled'),
+    ]
+
     orderID = models.AutoField(primary_key=True)
     customerID = models.ForeignKey(Customer, on_delete=models.CASCADE, related_name='orders')
     orderDate = models.DateTimeField(auto_now_add=True)
-    shippingAddress = models.TextField()
+    firstName = models.CharField(max_length=50, blank=False)
+    lastName = models.CharField(max_length=50, blank=False)
+    phoneNo = models.CharField(max_length=20, blank=False)
+    shippingAddress1 = models.TextField(blank=False)
+    shippingAddress2 = models.TextField(blank=False)
+    shippingAddress3 = models.TextField(blank=False)
     totalAmount = models.DecimalField(max_digits=12, decimal_places=2, default=0)
+    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
+    statusUpdatedDate = models.DateTimeField(auto_now=True)
+    cancellationReason = models.TextField(blank=True, null=True)
+    refundRequest = models.BooleanField(default=False)
+    refundReason = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['-orderDate']
 
     def __str__(self):
-        return f"Order {self.orderID}: Customer {self.customerID.user.username} - ${self.totalAmount}"
+        return f"Order {self.orderID}: Customer {self.customerID.user.username} - ${self.totalAmount} - {self.status}"
 
 
 # Represents a single product line item in an order.
@@ -184,40 +202,6 @@ class OrderItem(models.Model):
 
     def __str__(self):
         return f"OrderItem {self.orderItemID}: {self.productName} (Qty: {self.quantity})"
-
-
-# Tracks the status of an order item through its lifecycle.
-class OrderStatus(models.Model):
-    STATUS_CHOICES = [
-        ('Pending', 'Pending'),
-        ('Holding', 'Holding'),
-        ('Shipped', 'Shipped'),
-        ('Cancelled', 'Cancelled'),
-    ]
-
-    orderStatusID = models.AutoField(primary_key=True)
-    orderItemID = models.OneToOneField(OrderItem, on_delete=models.CASCADE, related_name='status')
-    status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Pending')
-    updatedDate = models.DateTimeField(auto_now=True)
-
-    class Meta:
-        verbose_name_plural = "OrderStatuses"
-
-    def __str__(self):
-        return f"OrderStatus: {self.orderItemID.productName} - {self.status}"
-
-
-# Records reason for cancelled order items.
-class CancelledItem(models.Model):
-    orderStatusID = models.OneToOneField(OrderStatus, on_delete=models.CASCADE, related_name='cancellation')
-    reason = models.TextField()
-    cancelledDate = models.DateTimeField(auto_now_add=True)
-
-    class Meta:
-        verbose_name_plural = "CancelledItems"
-
-    def __str__(self):
-        return f"Cancelled: {self.orderStatusID.orderItemID.productName} - {self.reason}"
 
 
 # Represents a product in a customer's wishlist.

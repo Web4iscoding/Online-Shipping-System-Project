@@ -1,0 +1,25 @@
+.customer-account-details-container, .customer-account-details-container * {
+    border: 1px solid red;
+}
+
+.customer-account-details-container {
+    padding: 0 var(--desktop-padding);
+  margin: 32px auto;
+  max-width: var(--max-width);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.customer-account-details-container button {
+  appearance: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+

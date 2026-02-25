@@ -1,0 +1,199 @@
+import {
+  TrashCanIcon,
+  PlusIcon,
+  MinusIcon,
+  CreditCardIcon,
+  CartArrowDownIcon,
+} from "../../assets/icons";
+import noImage from "../../assets/no_image_available.jpg";
+import "../../styles/Cart.css";
+import { cart as cartAPI, orders as OrdersAPI, API_BASE } from "../../api";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../AuthContext";
+import { sumPrices } from "../common/Calculations";
+
+const CartItem = ({
+  productID,
+  productName,
+  productPrice,
+  ProductCartQuantity,
+  productStock,
+  productImage,
+  handleUpdateQuantity,
+  handleDelete,
+}) => {
+  const isDecreaseDisabled = ProductCartQuantity <= 1;
+  const isIncreaseDisabled = ProductCartQuantity >= productStock;
+
+  return (
+    <div className="cart-item">
+      <button
+        onClick={() => handleDelete(productID)}
+        id="cart-item-delete-button"
+      >
+        <TrashCanIcon />
+      </button>
+
+      <div className="cart-item-quantity-button-group">
+        <button
+          onClick={() => {
+            if (!isDecreaseDisabled) {
+              handleUpdateQuantity(productID, ProductCartQuantity - 1);
+            }
+          }}
+          className={isDecreaseDisabled ? "disabled" : ""}
+          id="cart-item-quantity-decrease-button"
+          disabled={isDecreaseDisabled}
+        >
+          <MinusIcon />
+        </button>
+        <p>{ProductCartQuantity}</p>
+        <button
+          onClick={() => {
+            if (!isIncreaseDisabled) {
+              handleUpdateQuantity(productID, ProductCartQuantity + 1);
+            }
+          }}
+          className={isIncreaseDisabled ? "disabled" : ""}
+          id="cart-item-quantity-increase-button"
+          disabled={isIncreaseDisabled}
+        >
+          <PlusIcon />
+        </button>
+      </div>
+
+      <h2 className="cart-item-title">{productName}</h2>
+      <div className="cart-item-info">
+        <img src={productImage}></img>
+        <h3>${productPrice}</h3>
+      </div>
+    </div>
+  );
+};
+
+const Cart = () => {
+  const [cartItems, setCartItems] = useState([]);
+  const [totalPrice, setTotalPrice] = useState(0);
+  const [numberOfItems, setNumberOfItems] = useState(0);
+  const { user } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    async function performFetch() {
+      const cartData = await cartAPI.list();
+      console.log(cartData.items);
+      let priceList = [];
+      cartData.items.forEach((item) => {
+        priceList.push(item.product.price * item.quantity);
+      });
+      setCartItems(cartData.items);
+      setTotalPrice(sumPrices(priceList));
+      setNumberOfItems(cartData.item_count);
+    }
+    performFetch();
+  }, []);
+
+  // const handleCheckout = async () => {
+  //   const response = await OrdersAPI.create(
+  //     user.firstName,
+  //     user.lastName,
+  //     user.phoneNo,
+  //     user.shippingAddress1,
+  //     user.shippingAddress2,
+  //     user.shippingAddress3,
+  //   );
+  //   console.log(response);
+
+  //   // If multiple orders were created (items from different vendors)
+  //   if (response.orders && response.orders.length > 0) {
+  //     // Navigate to the first order's page
+  //     // Alternatively, you could navigate to a summary page showing all orders
+  //     navigate("/my-orders/");
+  //   }
+  // };
+
+  const handleDelete = async (productID) => {
+    await cartAPI.removeItem(productID);
+    const cartData = await cartAPI.list();
+    setCartItems(cartData.items);
+    setTotalPrice(cartData.total);
+    setNumberOfItems(cartData.item_count);
+  };
+
+  const handleUpdateQuantity = async (productID, quantity) => {
+    if (
+      quantity <=
+      cartItems.find((item) => item.product.productID === productID).product
+        .quantity
+    ) {
+      await cartAPI.updateQuantity(productID, quantity);
+      const cartData = await cartAPI.list();
+      setCartItems(cartData.items);
+      setTotalPrice(cartData.total);
+      setNumberOfItems(cartData.item_count);
+    }
+  };
+
+  return (
+    <div className="cart-container">
+      <div className="cart-header">
+        <h2 className="cart-title">Shopping Cart</h2>
+        <p className="cart-items-count">{numberOfItems} items</p>
+      </div>
+      {numberOfItems === 0 && (
+        <div className="no-cart-item-container">
+          <CartArrowDownIcon size={1.3} />
+          <p>Add items to your shopping cart</p>
+        </div>
+      )}
+      {numberOfItems > 0 && (
+        <div className="cart-item-container">
+          {cartItems.map((item, index) => (
+            <CartItem
+              key={index}
+              productID={item.product.productID}
+              productName={item.product.productName}
+              productPrice={item.product.price}
+              ProductCartQuantity={item.quantity}
+              productStock={item.product.quantity}
+              productImage={
+                item.product?.["primary_image"]
+                  ? `${API_BASE}/${item.product?.["primary_image"]}`
+                  : noImage
+              }
+              handleUpdateQuantity={handleUpdateQuantity}
+              handleDelete={handleDelete}
+            />
+          ))}
+        </div>
+      )}
+      {numberOfItems > 0 && (
+        <div className="cart-total-container">
+          <p className="cart-total-title">Total</p>
+          <p className="cart-total">${totalPrice}</p>
+        </div>
+      )}
+      {numberOfItems === 0 && (
+        <button
+          id="cart-shop-now-button"
+          onClick={() => navigate("/product-list/all-items")}
+        >
+          SHOP NOW
+        </button>
+      )}
+      {numberOfItems > 0 && (
+        <button
+          id="checkout-button"
+          onClick={() => navigate("/checkout")}
+          disabled={cartItems.length === 0}
+        >
+          <CreditCardIcon />
+          <p>Proceed to Checkout</p>
+        </button>
+      )}
+    </div>
+  );
+};
+
+export default Cart;

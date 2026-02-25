@@ -1,0 +1,58 @@
+.checkout-container,
+.checkout-container * {
+  /* border: 1px solid red; */
+}
+
+.checkout-container {
+  max-width: var(--max-width);
+  margin: 32px auto;
+  padding: 0 var(--desktop-padding);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.checkout-container h2 {
+  font-weight: 400;
+  margin: 0 auto;
+}
+
+.checkout-container button {
+  appearance: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+#checkout-revert-button {
+  display: inline-flex;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 4px;
+  max-width: 126px;
+  border: none;
+  background: none;
+}
+
+.checkout-form-title {
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--primary-color-light);
+}
+
+.checkout-form {
+  max-width: 500px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+#checkout-button {
+  padding: 8px 32px;
+  background: var(--primary-color-darker);
+  color: white;
+  border: none;
+  cursor: pointer;
+  font: inherit;
+  font-size: 14px;
+}

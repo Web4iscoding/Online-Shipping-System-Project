@@ -1,8 +1,8 @@
 from django.contrib import admin
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia,
-    Category, Brand, CartItem, Order, OrderItem, OrderStatus,
-    CancelledItem, WishlistItem, Promotion, Review
+    Category, Brand, CartItem, Order, OrderItem,
+    WishlistItem, Promotion, Review
 )
 
 # User Models Admin
@@ -96,10 +96,10 @@ class OrderItemInline(admin.TabularInline):
 
 @admin.register(Order)
 class OrderAdmin(admin.ModelAdmin):
-    list_display = ['orderID', 'customerID', 'orderDate', 'totalAmount']
+    list_display = ['orderID', 'customerID', 'orderDate', 'totalAmount', 'status', 'statusUpdatedDate']
     search_fields = ['customerID__user__username']
-    list_filter = ['orderDate']
-    readonly_fields = ['orderDate', 'totalAmount']
+    list_filter = ['orderDate', 'status']
+    readonly_fields = ['orderDate', 'totalAmount', 'statusUpdatedDate']
     inlines = [OrderItemInline]
 
 @admin.register(OrderItem)
@@ -107,24 +107,6 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_display = ['orderItemID', 'orderID', 'productName', 'quantity', 'paidPrice']
     search_fields = ['productName', 'orderID__orderID']
     list_filter = ['quantity']
-
-class CancelledItemInline(admin.TabularInline):
-    model = CancelledItem
-    extra = 0
-
-@admin.register(OrderStatus)
-class OrderStatusAdmin(admin.ModelAdmin):
-    list_display = ['orderStatusID', 'orderItemID', 'status', 'updatedDate']
-    list_filter = ['status', 'updatedDate']
-    search_fields = ['orderItemID__productName']
-    readonly_fields = ['updatedDate']
-    inlines = [CancelledItemInline]
-
-@admin.register(CancelledItem)
-class CancelledItemAdmin(admin.ModelAdmin):
-    list_display = ['orderStatusID', 'reason', 'cancelledDate']
-    list_filter = ['cancelledDate']
-    readonly_fields = ['cancelledDate']
 
 
 # Wishlist & Promotion Admin

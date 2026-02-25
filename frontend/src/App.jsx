@@ -24,12 +24,11 @@ import { wishlist, vendor } from "./api";
 import ProductList from "./components/products/ProductList";
 import ProductDetail from "./components/products/ProductDetail";
 
-
 import { useEffect } from "react";
 import { apiCall } from "./api";
 import RegisterSelection from "./components/auth/RegisterSelection";
 import MyOrders from "./components/auth/customer/MyOrders";
-import AccountDetails from "./components/auth/customer/AccountDetails";
+import CustomerAccountDetails from "./components/auth/customer/CustomerAccountDetails";
 import Catalog from "./components/auth/vendor/Catalog";
 import Orders from "./components/auth/vendor/Orders";
 import Discounts from "./components/auth/vendor/Discounts";
@@ -37,6 +36,12 @@ import ShippedOrders from "./components/auth/vendor/ShippedOrders";
 import StoreDetails from "./components/auth/vendor/StoreDetails";
 import HomePage from "./components/HomePage";
 import Footer from "./components/Footer";
+import Cart from "./components/cart/Cart";
+import Order from "./components/auth/customer/Order";
+import CatalogDetails from "./components/auth/vendor/CatalogDetails";
+import VendorOrderDetails from "./components/auth/vendor/VendorOrderDetails";
+import Checkout from "./components/cart/Checkout";
+import CustomerOrderDetails from "./components/auth/customer/CustomerOrderDetails";
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
@@ -55,7 +60,7 @@ const AppContent = () => {
           <Route path="/logout" element={<Logout />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/account-details" element={<AccountDetails />} />
+          <Route path="/customer/account-details" element={<CustomerAccountDetails />} />
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/discounts" element={<Discounts />} />
@@ -64,6 +69,18 @@ const AppContent = () => {
           <Route path="/product-list/:filter" element={<ProductList />} />
           <Route path="/product-list/:type/:name" element={<ProductList />} />
           <Route path="/product/:id" element={<ProductDetail />} />
+          <Route path="cart" element={<Cart />} />
+          <Route path="/order/:id" element={<Order />} />
+          <Route path="/catalog-details/:id" element={<CatalogDetails />} />
+          <Route
+            path="/vendor/order-details/:id"
+            element={<VendorOrderDetails />}
+          />
+          <Route path="/checkout" element={<Checkout />} />
+          <Route
+            path="/customer/order-details/:id"
+            element={<CustomerOrderDetails />}
+          />
         </Routes>
       </div>
       <Footer />

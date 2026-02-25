@@ -1,0 +1,14 @@
+.my-orders-container,
+.my-orders-container * {
+  border: 1px solid red;
+}
+
+.my-orders-container {
+  margin: 32px auto;
+  max-width: 800px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 0 var(--desktop-padding);
+  position: relative;
+}

@@ -3,8 +3,8 @@
  * Handles all communication with the Django backend
  */
 
-const API_BASE = "http://192.168.1.108:8000";
-// const API_BASE = "http://localhost:8000";
+// const API_BASE = "http://192.168.1.108:8000";
+const API_BASE = "http://localhost:8000";
 const API_URL = `${API_BASE}/api`;
 
 /**
@@ -18,9 +18,12 @@ export const apiCall = async (endpoint, options = {}) => {
   const token = localStorage.getItem("token");
 
   const headers = {
-    "Content-Type": "application/json",
     ...options.headers,
   };
+
+  if (!(options.body instanceof FormData)) {
+    headers["Content-Type"] = "application/json";
+  }
 
   if (token) {
     headers["Authorization"] = `Token ${token}`;
@@ -196,9 +199,15 @@ export const cart = {
       method: "GET",
     }),
 
-  add: (productID, quantity) =>
+  addItem: (productID, quantity) =>
     apiCall("/cart/", {
       method: "POST",
+      body: JSON.stringify({ productID, quantity }),
+    }),
+
+  updateQuantity: (productID, quantity) =>
+    apiCall("/cart/update_quantity/", {
+      method: "PUT",
       body: JSON.stringify({ productID, quantity }),
     }),
 
@@ -226,14 +235,34 @@ export const orders = {
       method: "GET",
     }),
 
-  create: (shippingAddress) =>
+  create: (
+    firstName,
+    lastName,
+    phoneNo,
+    shippingAddress1,
+    shippingAddress2,
+    shippingAddress3,
+  ) =>
     apiCall("/orders/", {
       method: "POST",
-      body: JSON.stringify({ shippingAddress }),
+      body: JSON.stringify({
+        firstName,
+        lastName,
+        phoneNo,
+        shippingAddress1,
+        shippingAddress2,
+        shippingAddress3,
+      }),
     }),
 
   cancel: (orderID, reason) =>
     apiCall(`/orders/${orderID}/cancel_order/`, {
+      method: "POST",
+      body: JSON.stringify({ reason }),
+    }),
+
+  requestRefund: (orderID, reason) =>
+    apiCall(`/orders/${orderID}/request_refund/`, {
       method: "POST",
       body: JSON.stringify({ reason }),
     }),
@@ -292,31 +321,45 @@ export const vendor = {
       method: "GET",
     }),
 
+  getProduct: (productID) =>
+    apiCall(`/vendor/get_product/?product_id=${productID}`, {
+      method: "GET",
+    }),
+
   CreateProduct: (
-    productID,
     productName,
     description,
     price,
     quantity,
-    availability,
-    isHidden,
     brand,
     category,
-  ) =>
-    apiCall("/vendor/create_product/", {
+    images = [], // Optional array of image files
+    availability = true,
+    isHidden = false,
+  ) => {
+    const formData = new FormData();
+    formData.append("productName", productName);
+    formData.append("description", description);
+    formData.append("price", price);
+    formData.append("quantity", quantity);
+    formData.append("brand", brand);
+    formData.append("category", category);
+    formData.append("availability", availability);
+    formData.append("isHidden", isHidden);
+
+    // Append each image file
+    if (images && images.length > 0) {
+      images.forEach((image) => {
+        formData.append("images", image);
+      });
+    }
+
+    return apiCall("/vendor/create_product/", {
       method: "POST",
-      body: JSON.stringify({
-        productID,
-        productName,
-        description,
-        price,
-        quantity,
-        availability,
-        isHidden,
-        brand,
-        category,
-      }),
-    }),
+      headers: {},
+      body: formData,
+    });
+  },
 
   UpdateProduct: (productID, fieldsToBeUpdated) =>
     apiCall("/vendor/update_product/", {
@@ -332,8 +375,87 @@ export const vendor = {
       method: "DELETE",
     }),
 
+  uploadProductImage: (
+    productID,
+    imageFile,
+    isPrimary = false,
+    sortedOrder = 0,
+  ) => {
+    const formData = new FormData();
+    formData.append("product_id", productID);
+    formData.append("image", imageFile);
+    formData.append("isPrimary", isPrimary);
+    formData.append("sortedOrder", sortedOrder);
+
+    return apiCall("/vendor/upload_product_image/", {
+      method: "POST",
+      headers: {},
+      body: formData,
+    });
+  },
+
+  deleteProductImage: (mediaID) =>
+    apiCall(`/vendor/delete_product_image/?media_id=${mediaID}`, {
+      method: "DELETE",
+    }),
+
+  updateProductImage: (mediaID, { isPrimary, sortedOrder, imageFile } = {}) => {
+    const formData = new FormData();
+    formData.append("media_id", mediaID);
+
+    if (isPrimary !== undefined) {
+      formData.append("isPrimary", isPrimary);
+    }
+
+    if (sortedOrder !== undefined) {
+      formData.append("sortedOrder", sortedOrder);
+    }
+
+    if (imageFile) {
+      formData.append("image", imageFile);
+    }
+
+    return apiCall("/vendor/update_product_image/", {
+      method: "PUT",
+      headers: {},
+      body: formData,
+    });
+  },
+
   salesSummary: () =>
     apiCall("/vendor/sales_summary/", {
       method: "GET",
+    }),
+
+  // Customer Orders Management
+  customerOrders: (status = "", refundRequest = null) => {
+    const params = new URLSearchParams();
+    if (status) params.append("status", status);
+    if (refundRequest !== null) params.append("refund_request", refundRequest);
+    const query = params.toString();
+    return apiCall(`/vendor/customer_orders/${query ? `?${query}` : ""}`, {
+      method: "GET",
+    });
+  },
+
+  customerOrderDetail: (orderID) =>
+    apiCall(`/vendor/customer_order_detail/?order_id=${orderID}`, {
+      method: "GET",
+    }),
+
+  updateOrderStatus: (orderID, status, reason = "") =>
+    apiCall("/vendor/update_order_status/", {
+      method: "PUT",
+      body: JSON.stringify({
+        order_id: orderID,
+        status,
+        reason,
+      }),
+    }),
+
+  dismissRefundRequest: (orderID) =>
+    apiCall("/vendor/dismiss_refund_request/", {
+      method: "PUT",
+      body: JSON.stringify({ order_id: orderID }),
     }),
 };

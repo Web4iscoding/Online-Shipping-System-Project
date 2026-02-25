@@ -5,8 +5,8 @@ from rest_framework.authtoken.models import Token
 
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia,
-    Category, Brand, CartItem, Order, OrderItem, OrderStatus,
-    CancelledItem, WishlistItem, Promotion, Review
+    Category, Brand, CartItem, Order, OrderItem,
+    WishlistItem, Promotion, Review
 )
 
 
@@ -138,7 +138,7 @@ class CustomerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Customer
-        fields = ['customerID', 'user', 'firstName', 'lastName', 'phoneNo', 'shippingAddress1', 'shippingAddress2', 'shippingAddress3', 'createdTime']
+        fields = ['customerID', 'user', 'firstName', 'lastName', 'phoneNo', 'profileImage', 'shippingAddress1', 'shippingAddress2', 'shippingAddress3', 'createdTime']
         read_only_fields = ['customerID', 'createdTime']
 
     def get_user(self, obj):
@@ -256,7 +256,9 @@ class ProductListSerializer(serializers.ModelSerializer):
 class ProductDetailSerializer(serializers.ModelSerializer):
 
     brand_name = serializers.CharField(source='brand.brandName', read_only=True)
+    brand_id = serializers.IntegerField(source='brand.brandID', read_only=True)
     category_name = serializers.CharField(source='category.categoryName', read_only=True)
+    category_id = serializers.IntegerField(source='category.categoryID', read_only=True)
     store = StoreSerializer(source='storeID', read_only=True)
     media = ProductMediaSerializer(many=True, read_only=True)
     discount_rate = serializers.SerializerMethodField()
@@ -266,7 +268,7 @@ class ProductDetailSerializer(serializers.ModelSerializer):
         model = Product
         fields = [
             'productID', 'productName', 'description', 'price', 'quantity',
-            'availability', 'brand_name', 'category_name', 'store',
+            'availability', 'brand_name', 'brand_id', 'category_name', 'category_id', 'store',
             'media', 'discount_rate', 'discounted_price', 'createdTime', 'updatedTime', 'isHidden'
         ]
         read_only_fields = ['productID', 'createdTime', 'updatedTime']
@@ -321,7 +323,7 @@ class CartItemSerializer(serializers.ModelSerializer):
 # Order Serializers
 
 class OrderItemSerializer(serializers.ModelSerializer):
- 
+
     product_details = ProductListSerializer(source='productID', read_only=True)
 
     class Meta:
@@ -330,28 +332,32 @@ class OrderItemSerializer(serializers.ModelSerializer):
         read_only_fields = ['orderItemID']
 
 
-class OrderStatusSerializer(serializers.ModelSerializer):
-    
-    class Meta:
-        model = OrderStatus
-        fields = ['orderStatusID', 'status', 'updatedDate']
-        read_only_fields = ['orderStatusID', 'updatedDate']
-
-
 class OrderSerializer(serializers.ModelSerializer):
 
     items = OrderItemSerializer(many=True, read_only=True)
-    customer_name = serializers.SerializerMethodField()
+    customer_username = serializers.CharField(source='customerID.user.username', read_only=True)
+    customer_profileImage = serializers.CharField(source='customerID.profileImage', read_only=True)
+    storeName = serializers.SerializerMethodField()
+    vendor_profileImage = serializers.SerializerMethodField()
 
     class Meta:
         model = Order
-        fields = ['orderID', 'customer_name', 'orderDate', 'shippingAddress', 'totalAmount', 'items']
-        read_only_fields = ['orderID', 'orderDate']
+        fields = ['orderID', 'customer_username', 'customer_profileImage', 'storeName', 'vendor_profileImage', 'firstName', 'lastName', 'phoneNo', 'orderDate', 'shippingAddress1', 'shippingAddress2', 'shippingAddress3', 'totalAmount', 'status', 'statusUpdatedDate', 'cancellationReason', 'refundRequest', 'refundReason', 'items']
+        read_only_fields = ['orderID', 'orderDate', 'statusUpdatedDate']
 
-    def get_customer_name(self, obj):
-        return f"{obj.customerID.firstName} {obj.customerID.lastName}".strip()
+    def _get_store(self, obj):
+        item = obj.items.select_related('productID__storeID__vendorID').first()
+        return item.productID.storeID if item else None
 
+    def get_storeName(self, obj):
+        store = self._get_store(obj)
+        return store.storeName if store else None
 
+    def get_vendor_profileImage(self, obj):
+        store = self._get_store(obj)
+        if not store or not store.vendorID.profileImage:
+            return None
+        return store.vendorID.profileImage.url
 
 # Wishlist Serializer
 
@@ -396,5 +402,53 @@ class PromotionSerializer(serializers.ModelSerializer):
 
     def get_is_active(self, obj):
         return obj.is_active()
+
+
+
+# Vendor Order Serializers (for vendor to view customer orders)
+
+class VendorOrderItemSerializer(serializers.ModelSerializer):
+    """Serializer for order items from vendor's perspective."""
+    product_details = ProductListSerializer(source='productID', read_only=True)
+
+    class Meta:
+        model = OrderItem
+        fields = ['orderItemID', 'product_details', 'productName', 'quantity', 'paidPrice']
+        read_only_fields = ['orderItemID']
+
+
+class VendorOrderSerializer(serializers.ModelSerializer):
+    """Serializer for orders from vendor's perspective, includes customer info."""
+    items = serializers.SerializerMethodField()
+    customer_name = serializers.SerializerMethodField()
+    customer_email = serializers.SerializerMethodField()
+    customer_username = serializers.CharField(source='customerID.user.username', read_only=True)
+    customer_profileImage = serializers.CharField(source='customerID.profileImage', read_only=True)
+
+    class Meta:
+        model = Order
+        fields = [
+            'orderID', 'customer_name', 'customer_email', 'customer_username', 'customer_profileImage',
+            'firstName', 'lastName', 'phoneNo', 'orderDate', 'shippingAddress1', 'shippingAddress2', 
+            'shippingAddress3', 'totalAmount', 'status', 'statusUpdatedDate', 'cancellationReason',
+            'refundRequest', 'refundReason', 'items'
+        ]
+        read_only_fields = ['orderID', 'orderDate', 'statusUpdatedDate']
+
+
+    def get_customer_name(self, obj):
+        return f"{obj.customerID.firstName} {obj.customerID.lastName}".strip()
+
+    def get_customer_email(self, obj):
+        return obj.customerID.user.email
+
+    def get_items(self, obj):
+        """Only return items that belong to the vendor's store."""
+        store = self.context.get('store')
+        if store:
+            vendor_items = obj.items.filter(productID__storeID=store)
+        else:
+            vendor_items = obj.items.all()
+        return VendorOrderItemSerializer(vendor_items, many=True).data
 
 

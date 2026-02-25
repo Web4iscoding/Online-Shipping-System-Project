@@ -1,0 +1,78 @@
+.cancel-order-container,
+.cancel-order-container * {
+  /* border: 1px solid red; */
+}
+
+.cancel-order-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 300px;
+  background-color: white;
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+  border-radius: 25px;
+  padding: 32px 32px;
+  z-index: 1000;
+}
+
+.cancel-order-reason-field {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cancel-order-reason-field textarea {
+  resize: none;
+  height: 160px;
+  padding: 8px;
+  border: 1px solid var(--primary-color-light);
+  outline: none;
+  font: inherit;
+}
+.cancel-order-container > div svg * {
+  color: var(--primary-color);
+}
+
+.cancel-order-container p {
+  color: var(--primary-color);
+}
+
+.cancel-order-container > div:not(.cancel-order-reason-field) {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.cancel-order-container button {
+  font: inherit;
+  cursor: pointer;
+  border: none;
+  background: none;
+  appearance: none;
+  padding: 0;
+}
+
+.cancel-order-close-button {
+  position: absolute;
+  top: 20px;
+  right: 32px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#cancel-order-confirm-button {
+  position: absolute;
+  bottom: 20px;
+  right: 32px;
+  appearance: none;
+  cursor: pointer;
+  text-decoration: underline;
+  color: var(--primary-color-light);
+}
+
+#cancel-order-confirm-button:hover {
+  color: var(--primary-color-darker);
+}

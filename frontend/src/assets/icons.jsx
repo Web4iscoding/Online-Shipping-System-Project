@@ -9,6 +9,7 @@ import {
   mdiCashMultiple,
   mdiWindowClose,
   mdiAlertCircleOutline,
+  mdiAlertCircle,
   mdiShoppingOutline,
   mdiAccountDetails,
   mdiBasketOutline,
@@ -26,6 +27,18 @@ import {
   mdiGoogleDownasaur,
   mdiLoading,
   mdiMinus,
+  mdiTrashCanOutline,
+  mdiCreditCardOutline,
+  mdiClose,
+  mdiImageEdit,
+  mdiImagePlus,
+  mdiTrashCan,
+  mdiContentSaveEdit,
+  mdiFileEdit,
+  mdiCheckCircleOutline,
+  mdiMenuDown,
+  mdiCartArrowDown,
+  mdiAlert,
 } from "@mdi/js";
 
 const BellIcon = ({ size = 1 }) => <Icon path={mdiBellOutline} size={size} />;
@@ -110,6 +123,50 @@ const DinoIcon = ({ size = 1 }) => (
 
 const LoadingIcon = ({ size = 1 }) => <Icon path={mdiLoading} size={size} />;
 
+const TrashCanOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiTrashCanOutline} size={size} />
+);
+
+const CreditCardIcon = ({ size = 1 }) => (
+  <Icon path={mdiCreditCardOutline} size={size} />
+);
+
+const CloseIcon = ({ size = 1 }) => <Icon path={mdiClose} size={size} />;
+
+const ImageEditIcon = ({ size = 1 }) => (
+  <Icon path={mdiImageEdit} size={size} />
+);
+
+const ImagePlusIcon = ({ size = 1 }) => (
+  <Icon path={mdiImagePlus} size={size} />
+);
+
+const TrashCanIcon = ({ size = 1 }) => <Icon path={mdiTrashCan} size={size} />;
+
+const ContentSaveEditIcon = ({ size = 1 }) => (
+  <Icon path={mdiContentSaveEdit} size={size} />
+);
+
+const FileEditIcon = ({ size = 1 }) => <Icon path={mdiFileEdit} size={size} />;
+
+const SuccessTickIcon = ({ size = 1 }) => (
+  <Icon path={mdiCheckCircleOutline} size={size} />
+);
+
+const MenuDownIcon = ({ size = 1 }) => <Icon path={mdiMenuDown} size={size} />;
+
+const CartArrowDownIcon = ({ size = 1 }) => (
+  <Icon path={mdiCartArrowDown} size={size} />
+);
+
+const AlertCircleFilledIcon = ({ size = 1 }) => (
+  <Icon path={mdiAlertCircle} size={size} />
+);
+
+const AlertTriangleIcon = ({ size = 1 }) => (
+  <Icon path={mdiAlert} size={size} />
+);
+
 export {
   BellIcon,
   SearchIcon,
@@ -137,4 +194,17 @@ export {
   FirstPageArrow,
   DinoIcon,
   LoadingIcon,
+  TrashCanOutlineIcon,
+  CreditCardIcon,
+  CloseIcon,
+  ImageEditIcon,
+  ImagePlusIcon,
+  TrashCanIcon,
+  ContentSaveEditIcon,
+  FileEditIcon,
+  SuccessTickIcon,
+  MenuDownIcon,
+  CartArrowDownIcon,
+  AlertCircleFilledIcon,
+  AlertTriangleIcon,
 };

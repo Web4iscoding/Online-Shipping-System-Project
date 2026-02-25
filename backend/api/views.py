@@ -10,7 +10,7 @@ from decimal import Decimal
 
 from .models import (
     Customer, Vendor, Store, Product, ProductMedia, Category, Brand,
-    CartItem, Order, OrderItem, OrderStatus, WishlistItem, Promotion, Review
+    CartItem, Order, OrderItem, WishlistItem, Promotion, Review
 )
 from .serializers import (
     CustomerSerializer, VendorSerializer, CustomerRegisterSerializer,
@@ -18,7 +18,8 @@ from .serializers import (
     ProductListSerializer, ProductDetailSerializer, StoreSerializer,
     ProductCreateUpdateSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer,
     WishlistItemSerializer, ReviewSerializer, PromotionSerializer,
-    BrandSerializer, CategorySerializer
+    BrandSerializer, CategorySerializer, VendorOrderSerializer, VendorOrderItemSerializer,
+    ProductMediaSerializer
 )
 
 
@@ -257,6 +258,23 @@ class CartViewSet(viewsets.ViewSet):
         
         serializer = CartItemSerializer(cart_item)
         return Response(serializer.data, status=status.HTTP_201_CREATED if created else status.HTTP_200_OK)
+    
+    @action(detail=False, methods=['PUT'])
+    def update_quantity(self, request):
+        """Update quantity of an item in the cart."""
+        customer = get_object_or_404(Customer, user=request.user)
+        product_id = request.data.get('productID')
+        quantity = request.data.get('quantity')
+        
+        if not product_id or quantity is None:
+            return Response({'error': 'productID and quantity required'}, status=status.HTTP_400_BAD_REQUEST)
+        
+        cart_item = get_object_or_404(CartItem, customerID=customer, productID_id=product_id)
+        cart_item.quantity = int(quantity)
+        cart_item.save()
+        
+        serializer = CartItemSerializer(cart_item)
+        return Response(serializer.data)
 
     @action(detail=False, methods=['DELETE'])
     def remove_item(self, request):
@@ -300,60 +318,83 @@ class OrderViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        """Create a new order from cart items."""
+        """Create new orders from cart items, grouped by vendor."""
         customer = get_object_or_404(Customer, user=request.user)
-        cart_items = CartItem.objects.filter(customerID=customer)
+        cart_items = CartItem.objects.filter(customerID=customer).select_related('productID__storeID__vendorID')
         
         if not cart_items.exists():
             return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
         
-        shipping_address = request.data.get('shippingAddress') or customer.shippingAddress
-        if not shipping_address:
+        firstName = request.data.get('firstName') or customer.firstName
+        lastName = request.data.get('lastName') or customer.lastName
+        phoneNo = request.data.get('phoneNo') or customer.phoneNo
+        shipping_address1 = request.data.get('shippingAddress1') or customer.shippingAddress1
+        shipping_address2 = request.data.get('shippingAddress2') or customer.shippingAddress2
+        shipping_address3 = request.data.get('shippingAddress3') or customer.shippingAddress3
+        if not (shipping_address1 and shipping_address2 and shipping_address3):
             return Response({'error': 'Shipping address required'}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Create order
-        order = Order.objects.create(
-            customerID=customer,
-            shippingAddress=shipping_address
-        )
-        
-        total_amount = 0
-        
-        # Create order items from cart
+        # Group cart items by vendor
+        from collections import defaultdict
+        vendor_cart_items = defaultdict(list)
         for cart_item in cart_items:
-            # Get effective price (discounted if promotion active)
-            promo = cart_item.productID.promotions.filter(status='Active').first()
-            if promo and promo.is_active():
-                paid_price = float(cart_item.productID.price * (1 - promo.discountRate / 100))
-            else:
-                paid_price = float(cart_item.productID.price)
-            
-            order_item = OrderItem.objects.create(
-                orderID=order,
-                productID=cart_item.productID,
-                productName=cart_item.productID.productName,
-                quantity=cart_item.quantity,
-                paidPrice=paid_price
+            vendor_id = cart_item.productID.storeID.vendorID.vendorID
+            vendor_cart_items[vendor_id].append(cart_item)
+        
+        # Create separate order for each vendor
+        created_orders = []
+        for vendor_id, vendor_items in vendor_cart_items.items():
+            # Create order
+            order = Order.objects.create(
+                customerID=customer,
+                firstName=firstName,
+                lastName=lastName,
+                phoneNo=phoneNo,
+                shippingAddress1=shipping_address1,
+                shippingAddress2=shipping_address2,
+                shippingAddress3=shipping_address3,
             )
             
-            # Create order status
-            OrderStatus.objects.create(orderItemID=order_item, status='Pending')
+            total_amount = 0
             
-            # Update product quantity
-            cart_item.productID.quantity -= cart_item.quantity
-            cart_item.productID.save()
+            # Create order items from this vendor's cart items
+            for cart_item in vendor_items:
+                # Get effective price (discounted if promotion active)
+                promo = cart_item.productID.promotions.filter(status='Active').first()
+                if promo and promo.is_active():
+                    paid_price = float(cart_item.productID.price * (1 - promo.discountRate / 100))
+                else:
+                    paid_price = float(cart_item.productID.price)
+                
+                order_item = OrderItem.objects.create(
+                    orderID=order,
+                    productID=cart_item.productID,
+                    productName=cart_item.productID.productName,
+                    quantity=cart_item.quantity,
+                    paidPrice=paid_price
+                )
+                
+                # Update product quantity
+                cart_item.productID.quantity -= cart_item.quantity
+                cart_item.productID.save()
+                
+                total_amount += paid_price * cart_item.quantity
             
-            total_amount += paid_price * cart_item.quantity
-        
-        # Update order total
-        order.totalAmount = total_amount
-        order.save()
+            # Update order total
+            order.totalAmount = total_amount
+            order.save()
+            
+            created_orders.append(order)
         
         # Clear cart
         cart_items.delete()
         
-        serializer = OrderSerializer(order)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+        # Return all created orders
+        serializer = OrderSerializer(created_orders, many=True)
+        return Response({
+            'message': f'{len(created_orders)} order(s) created successfully',
+            'orders': serializer.data
+        }, status=status.HTTP_201_CREATED)
 
     @action(detail=True, methods=['POST'])
     def cancel_order(self, request, pk=None):
@@ -363,20 +404,42 @@ class OrderViewSet(viewsets.ViewSet):
         
         reason = request.data.get('reason', 'No reason provided')
         
-        # Cancel all items in order
-        for order_item in order.items.all():
-            order_status = order_item.status
-            if order_status.status != 'Cancelled':
-                order_status.status = 'Cancelled'
-                order_status.save()
-                
-                from .models import CancelledItem
-                CancelledItem.objects.create(
-                    orderStatusID=order_status,
-                    reason=reason
-                )
+        # Update order status to cancelled
+        order.status = 'Cancelled'
+        order.cancellationReason = reason
+        order.save()
         
         return Response({'message': 'Order cancelled'})
+
+    @action(detail=True, methods=['POST'])
+    def request_refund(self, request, pk=None):
+        """Request a refund for a shipped order."""
+        customer = get_object_or_404(Customer, user=request.user)
+        order = get_object_or_404(Order, orderID=pk, customerID=customer)
+
+        if order.status not in ('Pending', 'Holding'):
+            return Response(
+                {'error': 'Refund can only be requested for pending or held orders'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if order.refundRequest:
+            return Response(
+                {'error': 'Refund has already been requested for this order'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        reason = request.data.get('reason', '')
+        if not reason:
+            return Response(
+                {'error': 'reason is required when requesting a refund'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        order.refundRequest = True
+        order.refundReason = reason
+        order.save()
+
+        return Response({'message': 'Refund requested successfully'})
 
 
 
@@ -505,7 +568,7 @@ class VendorStoreViewSet(viewsets.ViewSet):
         """Get all products for the authenticated vendor's store."""
         vendor = self.get_vendor(request)
         store = get_object_or_404(Store, vendorID=vendor)
-        products = store.products.select_related(
+        products = store.products.filter(availability=True).select_related(
             'brand', 'category', 'storeID'
         ).prefetch_related('media', 'promotions')
         
@@ -521,16 +584,48 @@ class VendorStoreViewSet(viewsets.ViewSet):
         serializer = ProductDetailSerializer(products, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['GET'])
+    def get_product(self, request):
+        """
+        Get a specific product from vendor's store (including hidden products).
+        Required query param: ?product_id=<productID>
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        product_id = request.query_params.get('product_id')
+        if not product_id:
+            return Response(
+                {'error': 'product_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get product from vendor's store (no filter on isHidden, but must have availability=True)
+        product = get_object_or_404(Product, productID=product_id, storeID=store, availability=True)
+        serializer = ProductDetailSerializer(product)
+        return Response(serializer.data)
+
     @action(detail=False, methods=['POST'])
     def create_product(self, request):
-        """Create a new product in vendor's store."""
+        """Create a new product in vendor's store with optional images."""
         vendor = self.get_vendor(request)
         store = get_object_or_404(Store, vendorID=vendor)
         
         serializer = ProductCreateUpdateSerializer(data=request.data)
         if serializer.is_valid():
-            # Add the store to the product data
             product = serializer.save(storeID=store)
+            
+            # Handle image uploads from request.FILES
+            images = request.FILES.getlist('images')
+            for idx, image in enumerate(images):
+                ProductMedia.objects.create(
+                    productID=product,
+                    mediaURL=image,
+                    mediaType='image',
+                    isPrimary=(idx == 0),
+                    sortedOrder=idx
+                )
+            
             return Response(
                 ProductDetailSerializer(product).data,
                 status=status.HTTP_201_CREATED
@@ -585,6 +680,142 @@ class VendorStoreViewSet(viewsets.ViewSet):
             status=status.HTTP_204_NO_CONTENT
         )
 
+    @action(detail=False, methods=['POST'])
+    def upload_product_image(self, request):
+        """
+        Upload an image for a product.
+        Required body params:
+            - product_id: ID of the product
+            - image: Image file
+        Optional params:
+            - isPrimary: Boolean (default: False)
+            - sortedOrder: Integer (default: 0)
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        product_id = request.data.get('product_id')
+        image_file = request.FILES.get('image')
+        
+        if not product_id:
+            return Response(
+                {'error': 'product_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not image_file:
+            return Response(
+                {'error': 'image file is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Ensure product belongs to vendor's store
+        product = get_object_or_404(Product, productID=product_id, storeID=store)
+        
+        # Get optional parameters
+        is_primary = request.data.get('isPrimary', 'false').lower() == 'true'
+        sorted_order = int(request.data.get('sortedOrder', 0))
+        
+        # If this is set as primary, unset other primary images
+        if is_primary:
+            ProductMedia.objects.filter(productID=product, isPrimary=True).update(isPrimary=False)
+        
+        # Create product media
+        product_media = ProductMedia.objects.create(
+            productID=product,
+            mediaURL=image_file,
+            mediaType='image',
+            isPrimary=is_primary,
+            sortedOrder=sorted_order
+        )
+        
+        serializer = ProductMediaSerializer(product_media)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['DELETE'])
+    def delete_product_image(self, request):
+        """
+        Delete a product image.
+        Required query param: ?media_id=<productMediaID>
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        media_id = request.query_params.get('media_id')
+        if not media_id:
+            return Response(
+                {'error': 'media_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get media and ensure it belongs to vendor's product
+        product_media = get_object_or_404(
+            ProductMedia,
+            productMediaID=media_id,
+            productID__storeID=store
+        )
+        
+        product_media.delete()
+        return Response(
+            {'message': 'Product image deleted successfully'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+    @action(detail=False, methods=['PUT'])
+    def update_product_image(self, request):
+        """
+        Update product media attributes and/or replace the image.
+        Required body params:
+            - media_id: ID of the product media
+        Optional params:
+            - isPrimary: Boolean
+            - sortedOrder: Integer
+            - image: Image file (to replace existing image)
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        media_id = request.data.get('media_id')
+        if not media_id:
+            return Response(
+                {'error': 'media_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get media and ensure it belongs to vendor's product
+        product_media = get_object_or_404(
+            ProductMedia,
+            productMediaID=media_id,
+            productID__storeID=store
+        )
+        
+        # Update fields if provided
+        is_primary = request.data.get('isPrimary')
+        sorted_order = request.data.get('sortedOrder')
+        image_file = request.FILES.get('image')
+        
+        if is_primary is not None:
+            is_primary_bool = str(is_primary).lower() == 'true'
+            # If setting as primary, unset other primary images for this product
+            if is_primary_bool:
+                ProductMedia.objects.filter(
+                    productID=product_media.productID,
+                    isPrimary=True
+                ).update(isPrimary=False)
+            product_media.isPrimary = is_primary_bool
+        
+        if sorted_order is not None:
+            product_media.sortedOrder = int(sorted_order)
+        
+        if image_file:
+            # Replace the existing image
+            product_media.mediaURL = image_file
+        
+        product_media.save()
+        
+        serializer = ProductMediaSerializer(product_media)
+        return Response(serializer.data)
+
     @action(detail=False, methods=['GET'])
     def sales_summary(self, request):
         """Get sales summary for vendor."""
@@ -603,4 +834,149 @@ class VendorStoreViewSet(viewsets.ViewSet):
             'total_orders': total_orders,
             'total_sales': float(total_sales),
             'total_products': store.products.count()
+        })
+
+    @action(detail=False, methods=['GET'])
+    def customer_orders(self, request):
+        """
+        Get all orders that contain products from the vendor's store.
+        Supports filtering by status query param: ?status=Pending
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        # Get orders containing items from this vendor's store
+        orders = Order.objects.filter(
+            items__productID__storeID=store
+        ).distinct().prefetch_related('items', 'items__productID')
+        
+        # Optional status filter
+        status_filter = request.query_params.get('status')
+        if status_filter:
+            orders = orders.filter(status=status_filter)
+
+        # Optional refund request filter
+        refund_filter = request.query_params.get('refund_request')
+        if refund_filter is not None:
+            orders = orders.filter(refundRequest=refund_filter.lower() == 'true')
+
+        serializer = VendorOrderSerializer(orders, many=True, context={'store': store})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def customer_order_detail(self, request):
+        """
+        Get details of a specific order.
+        Required query param: ?order_id=<orderID>
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        order_id = request.query_params.get('order_id')
+        if not order_id:
+            return Response(
+                {'error': 'order_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Ensure the order contains items from vendor's store
+        order = get_object_or_404(
+            Order.objects.filter(items__productID__storeID=store).distinct(),
+            orderID=order_id
+        )
+        
+        serializer = VendorOrderSerializer(order, context={'store': store})
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['PUT'])
+    def update_order_status(self, request):
+        """
+        Update the status of an order.
+        Required body params:
+            - order_id: ID of the order
+            - status: New status (Pending, Holding, Shipped, Cancelled)
+            - reason: (Optional) Required if status is 'Cancelled'
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+        
+        order_id = request.data.get('order_id')
+        new_status = request.data.get('status')
+        reason = request.data.get('reason', '')
+        
+        if not order_id:
+            return Response(
+                {'error': 'order_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        if not new_status:
+            return Response(
+                {'error': 'status is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        valid_statuses = ['Pending', 'Holding', 'Shipped', 'Cancelled']
+        if new_status not in valid_statuses:
+            return Response(
+                {'error': f'Invalid status. Must be one of: {", ".join(valid_statuses)}'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        
+        # Get order and ensure it contains items from vendor's store
+        order = get_object_or_404(
+            Order.objects.filter(items__productID__storeID=store).distinct(),
+            orderID=order_id
+        )
+        
+        # Update order status
+        order.status = new_status
+        
+        # If cancelled, save the reason
+        if new_status == 'Cancelled':
+            if not reason:
+                return Response(
+                    {'error': 'reason is required when cancelling an order'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            order.cancellationReason = reason
+        
+        order.save()
+        
+        return Response({
+            'message': f'Order status updated to {new_status}',
+            'order_id': order_id,
+            'status': new_status
+        })
+
+    @action(detail=False, methods=['PUT'])
+    def dismiss_refund_request(self, request):
+        """
+        Dismiss a customer's refund request by setting refundRequest to False.
+        Required body param:
+            - order_id: ID of the order
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        order_id = request.data.get('order_id')
+        if not order_id:
+            return Response(
+                {'error': 'order_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Ensure the order contains items from vendor's store
+        order = get_object_or_404(
+            Order.objects.filter(items__productID__storeID=store).distinct(),
+            orderID=order_id
+        )
+
+        order.refundRequest = False
+        order.refundReason = None
+        order.save()
+
+        return Response({
+            'message': 'Refund request dismissed',
+            'order_id': order_id,
         })

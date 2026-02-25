@@ -21,7 +21,7 @@ export const Login = () => {
 
   useEffect(() => {
     if (isAuthenticated) {
-      navigate("/profile", { replace: true });
+      navigate("/", { replace: true });
     }
   }, [isAuthenticated, navigate]);
 

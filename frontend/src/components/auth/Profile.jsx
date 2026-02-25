@@ -47,7 +47,7 @@ const CustomerProfile = ({ user }) => {
         </button>
         <button
           className="profile-card"
-          onClick={() => navigate("/account-details")}
+          onClick={() => navigate("/customer/account-details")}
         >
           <div className="profile-card-title">
             <AccountDetailsIcon size={1.3} />

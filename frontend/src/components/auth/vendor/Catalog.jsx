@@ -11,6 +11,8 @@ import {
 import "../../../styles/Catalog.css";
 import gucci from "../../../assets/gucci.png";
 import { vendor as vendorAPI, API_BASE } from "../../../api";
+import CatalogCreateModal from "../../modals/CatalogCreateModal";
+import ModalBackdrop from "../../common/ModalBackdrop";
 
 const CatalogCard = ({
   productName = "Lorem Ipsum Dolor Sit",
@@ -19,29 +21,43 @@ const CatalogCard = ({
   updatedTime = "01/01/2026",
   isHidden = false,
   src = gucci,
-  handleDelete,
+  handleClickCatalogCard,
   handleEdit,
 }) => {
   return (
-    <div className={`catalog-card ${isHidden ? "hidden" : ""}`}>
+    <div
+      className={`catalog-card ${isHidden ? "hidden" : ""}`}
+      onClick={() => {
+        handleClickCatalogCard(productID);
+      }}
+    >
       {isHidden ? (
         <button
           className="catalog-hidden-button"
-          onClick={() => handleEdit(productID, { isHidden: false })}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit(productID, { isHidden: false });
+          }}
         >
           <EyeOffIcon />
         </button>
       ) : (
         <button
           className="catalog-hidden-button"
-          onClick={() => handleEdit(productID, { isHidden: true })}
+          onClick={(e) => {
+            e.stopPropagation();
+            handleEdit(productID, { isHidden: true });
+          }}
         >
           <EyeIcon />
         </button>
       )}
       <button
         id="catalog-delete-button"
-        onClick={() => handleDelete(productID)}
+        onClick={(e) => {
+          e.stopPropagation();
+          handleEdit(productID, { availability: false });
+        }}
       >
         Delete product
       </button>
@@ -54,7 +70,7 @@ const CatalogCard = ({
         <img src={src}></img>
         <div>
           <p>Created: {createdTime}</p>
-          <p>Updated: {updatedTime}</p>
+          <p>Last Updated: {updatedTime}</p>
         </div>
       </div>
     </div>
@@ -66,6 +82,7 @@ const Catalog = () => {
   const { isAuthenticated, isVendor } = useAuth();
   const [products, setProducts] = useState();
   const [query, setQuery] = useState("");
+  const [showCreateModal, setShowCreateModal] = useState(false);
 
   useEffect(() => {
     if (!isAuthenticated || !isVendor) {
@@ -82,31 +99,37 @@ const Catalog = () => {
     performFetch();
   }, [query]);
 
-  const handleDelete = async (productID) => {
-    await vendorAPI.DeleteProduct(productID);
+  const handleEdit = async (productID, fieldsToBeUpdated) => {
+    await vendorAPI.UpdateProduct(productID, fieldsToBeUpdated);
 
-    setProducts((prevProducts) =>
-      prevProducts.filter((product) => product.productID !== productID),
-    );
+    const products = await vendorAPI.myProducts(query);
+    setProducts(products);
   };
 
-  const handleEdit = async (productID, fieldsToBeUpdated) => {
-    const updatedProduct = await vendorAPI.UpdateProduct(
-      productID,
-      fieldsToBeUpdated,
-    );
+  const handleClickCatalogCard = (productID) => {
+    navigate(`/catalog-details/${productID}`);
+  };
 
-    setProducts((prevProducts) =>
-      prevProducts.map((product) =>
-        product.productID === updatedProduct.productID
-          ? updatedProduct
-          : product,
-      ),
-    );
+  const submitRerender = () => {
+    async function performFetch() {
+      const products = await vendorAPI.myProducts(query);
+      setProducts(products);
+    }
+
+    performFetch();
   };
 
   return (
     <div className="catalog-container">
+      {showCreateModal && (
+        <CatalogCreateModal
+          onClose={() => setShowCreateModal(false)}
+          submitRerender={submitRerender}
+        />
+      )}
+      {showCreateModal && (
+        <ModalBackdrop onClose={() => setShowCreateModal(false)} />
+      )}
       <button id="catalog-revert-button" onClick={() => navigate("/profile")}>
         <LeftArrowIcon />
         <p>Your Account</p>
@@ -130,7 +153,10 @@ const Catalog = () => {
             onChange={(e) => setQuery(e.target.value)}
           ></input>
         </div>
-        <button className="catalog-add">
+        <button
+          className="catalog-add"
+          onClick={() => setShowCreateModal(true)}
+        >
           <PlusIcon />
         </button>
       </div>
@@ -144,8 +170,8 @@ const Catalog = () => {
             updatedTime={product.updatedTime}
             isHidden={product.isHidden}
             src={`${API_BASE}${product.media[0]?.mediaURL}`}
-            handleDelete={handleDelete}
             handleEdit={handleEdit}
+            handleClickCatalogCard={handleClickCatalogCard}
           />
         ))}
       </div>

@@ -27,6 +27,7 @@
 }
 
 .navbar-container {
+  position: relative;
   max-width: var(--max-width);
   margin: 0 auto;
   padding: 0 var(--desktop-padding);
@@ -37,9 +38,12 @@
 }
 
 .navbar-links {
+  position: absolute;
   display: flex;
   gap: 32px;
   font-size: 14px;
+  left: calc(50% + 30px);
+  transform: translateX(-50%);
 }
 
 .navbar-links > *:hover {
@@ -59,4 +63,12 @@
 .navbar-user-menu > *:hover {
   cursor: pointer;
   color: var(--primary-color-lighter);
+}
+
+.nav-avatar {
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid var(--primary-color-lighter);
 }
