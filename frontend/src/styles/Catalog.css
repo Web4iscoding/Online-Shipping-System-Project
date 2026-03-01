@@ -154,3 +154,21 @@
 .hidden {
   opacity: 0.2;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .catalog-container {
+    padding: 0 16px;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .catalog-utility-bar {
+    gap: 16px;
+  }
+
+  .catalog-card-content > img {
+    width: 64px;
+    height: 64px;
+  }
+}

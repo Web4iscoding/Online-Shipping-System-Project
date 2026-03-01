@@ -224,3 +224,11 @@
 .write-review-thumbnail-add * {
   color: var(--primary-color-light);
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .write-review-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+}

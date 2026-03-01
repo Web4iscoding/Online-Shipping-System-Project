@@ -265,3 +265,27 @@
   resize: none;
   font: inherit;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .catalog-details-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+
+  .catalog-details-header {
+    margin: 0;
+    padding: 0 0 8px 0;
+  }
+
+  .catalog-details-edit-field {
+    grid-template-columns: 1fr;
+    padding: 0;
+    gap: 24px;
+  }
+
+  .catalog-details-image-thumbnail-container {
+    width: 60px;
+    height: 60px;
+  }
+}

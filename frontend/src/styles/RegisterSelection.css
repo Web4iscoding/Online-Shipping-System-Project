@@ -54,3 +54,18 @@
 .register-selection-container h2 {
   text-align: center;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .register-selection-container {
+    padding: 0 16px;
+  }
+
+  .register-selection-button-group {
+    flex-direction: column;
+  }
+
+  .register-selection-button-group > * {
+    height: 180px;
+  }
+}

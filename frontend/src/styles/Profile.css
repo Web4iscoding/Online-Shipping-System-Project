@@ -88,3 +88,20 @@
 .profile-container .logout:hover {
   border: 1px solid var(--primary-color);
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .profile-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+
+  .profile-card-container {
+    flex-direction: column;
+  }
+
+  .profile-card {
+    height: auto;
+    min-height: 120px;
+  }
+}

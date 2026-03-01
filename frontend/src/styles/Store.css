@@ -134,3 +134,39 @@
 .store-products-section h2 {
   font-weight: 400;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .store-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+
+  .store-header {
+    flex-direction: column;
+    gap: 24px;
+    padding: 16px 0 24px 0;
+  }
+
+  .store-header-right {
+    padding: 0;
+  }
+
+  .store-header-image {
+    height: 200px;
+  }
+
+  .store-avatar {
+    width: 64px;
+    height: 64px;
+  }
+
+  .store-product-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .store-products-section {
+    padding: 24px 0 0 0;
+  }
+}

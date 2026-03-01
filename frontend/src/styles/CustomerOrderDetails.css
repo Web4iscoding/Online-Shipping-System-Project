@@ -142,3 +142,32 @@
   padding: 0;
   border: none;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .customer-order-details-container {
+    padding: 0 16px;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .customer-order-header {
+    padding: 16px;
+  }
+
+  #customer-order-cancel-order-button {
+    position: static;
+    margin-top: 8px;
+    align-self: flex-start;
+  }
+
+  .customer-order-details {
+    padding: 16px;
+  }
+
+  .customer-order-footer {
+    flex-direction: column;
+    padding: 16px;
+    gap: 24px;
+  }
+}

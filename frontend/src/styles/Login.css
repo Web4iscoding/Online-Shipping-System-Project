@@ -65,3 +65,13 @@
 .register-link:hover {
   text-decoration: underline;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .login-form {
+    padding: 0 16px;
+    max-width: 100%;
+    margin: 24px auto;
+    gap: 24px;
+  }
+}

@@ -148,6 +148,38 @@
   text-align: center;
 }
 
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .product-list-container {
+    padding: 0 16px;
+    margin-top: 24px;
+  }
+
+  .product-list {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 12px;
+  }
+
+  .product-list-card-title {
+    font-size: 12px;
+  }
+
+  .pagination {
+    font-size: 12px;
+    gap: 8px;
+  }
+
+  .previous-page-buttons-group,
+  .next-page-buttons-group {
+    gap: 8px;
+  }
+
+  .previous-page-button p,
+  .next-page-button p {
+    display: none;
+  }
+}
+
 .no-products-message * {
   color: var(--primary-color);
 }

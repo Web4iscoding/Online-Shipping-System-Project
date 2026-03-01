@@ -362,3 +362,35 @@
 #create-discount-submit:hover {
   opacity: 0.9;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .discounts-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+
+  .discount-card {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .discount-card-right {
+    align-items: flex-start;
+  }
+
+  .discount-modal {
+    width: calc(100vw - 32px);
+    max-width: none;
+  }
+
+  .create-discount-actions {
+    flex-direction: column;
+  }
+
+  .create-discount-field input {
+    max-width: 100%;
+  }
+}

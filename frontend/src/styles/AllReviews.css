@@ -150,3 +150,11 @@
   color: var(--primary-color);
   font-size: 14px;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .all-reviews-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+}

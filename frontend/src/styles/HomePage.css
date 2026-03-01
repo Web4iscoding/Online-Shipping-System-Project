@@ -22,6 +22,11 @@
   flex: 1;
 }
 
+/* Hidden on desktop, shown on mobile */
+.brand-carousel-mobile {
+  display: none;
+}
+
 .big-brand-card {
   height: 350px;
   padding: 16px;
@@ -112,7 +117,7 @@
 }
 
 .marquee {
-  width: 100vw;
+  width: 100%;
   overflow: hidden;
   height: 200px;
   border-top: 1px solid var(--primary-color-light);
@@ -122,12 +127,16 @@
 .track {
   display: flex;
   height: 100%;
-  width: 200vw;
+  width: max-content;
+  will-change: transform;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+  -webkit-animation: scroll-left 45s linear infinite;
   animation: scroll-left 45s linear infinite;
 }
 
 .item {
-  flex: 1 0 calc(100vw / 4);
+  flex: 0 0 calc(100vw / 4);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -182,6 +191,7 @@
 }
 
 .newest-items-list {
+  --card-slide-width: 216px; /* 200px card + 16px gap */
   position: relative;
   overflow: hidden;
   width: 100%;
@@ -253,11 +263,183 @@
   right: 8px;
 }
 
-@keyframes scroll-left {
+@-webkit-keyframes scroll-left {
   from {
-    transform: translateX(0);
+    -webkit-transform: translateX(0) translateZ(0);
+    transform: translateX(0) translateZ(0);
   }
   to {
-    transform: translateX(-100vw);
+    -webkit-transform: translateX(-50%) translateZ(0);
+    transform: translateX(-50%) translateZ(0);
+  }
+}
+
+@keyframes scroll-left {
+  from {
+    -webkit-transform: translateX(0) translateZ(0);
+    transform: translateX(0) translateZ(0);
+  }
+  to {
+    -webkit-transform: translateX(-50%) translateZ(0);
+    transform: translateX(-50%) translateZ(0);
+  }
+}
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .brand-cards-container {
+    flex-direction: column;
+    padding: 0 16px;
+    margin: 16px auto;
+    gap: 12px;
+  }
+
+  .big-brand-card {
+    height: 220px;
+    border-radius: 16px;
+  }
+
+  .small-brand-cards-container {
+    gap: 12px;
+  }
+
+  .small-brand-cards-container > div {
+    gap: 12px;
+  }
+
+  .small-brand-cards-container > div div,
+  .small-brand-cards-container > div a {
+    height: 100px;
+    border-radius: 16px;
+  }
+
+  .marquee {
+    height: 120px;
+  }
+
+  .item {
+    flex: 0 0 calc(100vw / 2);
+  }
+
+  .newest-items-container {
+    flex-direction: column;
+    padding: 0 16px;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .newest-items-left {
+    margin-top: 0;
+    align-items: center;
+    text-align: center;
+  }
+
+  .newest-items-left h2 {
+    font-size: 36px;
+  }
+
+  .product-card {
+    flex: 0 0 150px;
+  }
+
+  .product-card-image-container {
+    height: 190px;
+  }
+
+  .product-card-title {
+    font-size: 12px;
+  }
+
+  .newest-items-track {
+    gap: 12px;
+  }
+
+  .newest-items-list {
+    --card-slide-width: 162px; /* 150px card + 12px gap */
+  }
+
+  /* Hide desktop brand cards, show mobile carousel */
+  .brand-cards-container {
+    display: none;
+  }
+
+  .brand-carousel-mobile {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+    padding: 0 16px;
+    margin: 16px auto;
+  }
+
+  .brand-carousel-viewport {
+    position: relative;
+    width: 100%;
+    border-radius: 16px;
+    overflow: hidden;
+        border: 1px solid var(--primary-color-lighter);
+
+  }
+
+  .brand-carousel-track {
+    display: flex;
+    transition: transform 0.4s ease;
+  }
+
+  .brand-carousel-slide {
+    min-width: 100%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 220px;
+  }
+
+  .brand-carousel-slide img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    display: block;
+    border-radius: 16px;
+  }
+
+  .brand-carousel-slide:not(:first-child) img {
+    width: 80%;
+    height: 80%;
+    object-fit: contain;
+  }
+
+  .brand-carousel-dots {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .brand-carousel-dots .image-select-button {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: none;
+    background: var(--primary-color-lighter);
+    cursor: pointer;
+    padding: 0;
+
+  }
+
+  .brand-carousel-dots .image-select-button.selected {
+    background: var(--primary-color);
+  }
+
+    .brand-carousel-dots .image-select-button:not(.selected):hover {
+    background: var(--primary-color-light);
+  }
+
+  /* Center newest section */
+  .newest-items-container {
+    align-items: center;
+  }
+
+  .newest-items-left button {
+    padding: 8px 64px;
   }
 }

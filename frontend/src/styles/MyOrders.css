@@ -12,3 +12,11 @@
   padding: 0 var(--desktop-padding);
   position: relative;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .my-orders-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+}

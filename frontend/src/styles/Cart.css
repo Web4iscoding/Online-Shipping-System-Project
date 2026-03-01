@@ -198,3 +198,27 @@
   background-color: var(--primary-color-darker);
   color: white;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .cart-container {
+    padding: 0 16px;
+    margin: 24px auto;
+  }
+
+  .cart-item-info img {
+    width: 64px;
+    height: 64px;
+  }
+
+  .cart-item-quantity-button-group {
+    position: relative;
+    right: auto;
+    bottom: auto;
+    justify-content: flex-start;
+  }
+
+  .cart-total {
+    font-size: 20px;
+  }
+}

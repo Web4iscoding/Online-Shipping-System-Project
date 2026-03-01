@@ -67,3 +67,18 @@
 .shipping-address-label + input + input {
   margin-bottom: 8px;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .register-form {
+    padding: 0 16px;
+    max-width: 100%;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .name-fields {
+    flex-direction: column;
+    gap: 8px;
+  }
+}

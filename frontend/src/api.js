@@ -3,8 +3,8 @@
  * Handles all communication with the Django backend
  */
 
-// const API_BASE = "http://192.168.1.108:8000";
-const API_BASE = "http://localhost:8000";
+const API_BASE = "http://192.168.1.108:8000";
+// const API_BASE = "http://localhost:8000";
 const API_URL = `${API_BASE}/api`;
 
 /**

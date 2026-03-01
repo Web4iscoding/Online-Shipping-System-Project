@@ -88,3 +88,35 @@
 #order-general-action-reject-button:hover {
   opacity: 0.9;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .order-general-action-container {
+    width: calc(100vw - 32px);
+    height: auto;
+    min-height: unset;
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .order-general-action-close-button {
+    top: 16px;
+    right: 16px;
+  }
+
+  .refund-modal-customer-avatar {
+    width: 48px;
+    height: 48px;
+  }
+
+  .refund-modal-reason {
+    padding: 12px;
+    font-size: 14px;
+  }
+
+  #order-general-action-button-group {
+    position: static;
+    margin-top: 16px;
+    justify-content: flex-end;
+  }
+}

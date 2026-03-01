@@ -10,6 +10,7 @@ import chromeHeartsLogo from "../assets/chrome_hearts_logo.png";
 import balenciagaLogo from "../assets/balenciaga_logo.png";
 import chromeHeartsCap from "../assets/chrome_hearts_cap.png";
 import balenciagaHoodie from "../assets/balenciaga_hoodie.png";
+import homepageMain from "../assets/homepage_main.png";
 import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { products as productsApi, API_BASE } from "../api";
@@ -36,6 +37,26 @@ const HomePage = () => {
   const navigate = useNavigate();
   const [newestProducts, setNewestProducts] = useState([]);
   const [trackOffset, setTrackOffset] = useState(0);
+  const [brandSlideIndex, setBrandSlideIndex] = useState(0);
+  const [brandResetKey, setBrandResetKey] = useState(0);
+
+  const brandSlides = [
+    { src: homepageMain, link: "/product-list/all-items" },
+    { src: vivienneWestooodLogo, link: "/product-list/brand/Vivienne%20Westwood" },
+    { src: gucciLogo, link: "/product-list/brand/Gucci" },
+    { src: chromeHeartsLogo, link: "/product-list/brand/Chrome%20Hearts" },
+    { src: balenciagaLogo, link: "/product-list/brand/Balenciaga" },
+  ];
+
+  // Auto-scroll brand carousel every 5 seconds
+  useEffect(() => {
+    const total = brandSlides.length;
+    if (total <= 1) return;
+    const interval = setInterval(() => {
+      setBrandSlideIndex((prev) => (prev + 1) % total);
+    }, 5000);
+    return () => clearInterval(interval);
+  }, [brandResetKey]);
 
   useEffect(() => {
     productsApi.newest().then((data) => {
@@ -99,6 +120,62 @@ const HomePage = () => {
           </div>
         </div>
       </section>
+      {/* Mobile brand carousel */}
+      <section className="brand-carousel-mobile">
+        <div className="brand-carousel-viewport">
+          <div
+            className="brand-carousel-track"
+            style={{
+              transform: `translateX(-${brandSlideIndex * 100}%)`,
+            }}
+          >
+            {brandSlides.map((slide, index) => (
+              <div
+                key={index}
+                className="brand-carousel-slide"
+                onClick={() => navigate(slide.link)}
+              >
+                <img src={slide.src} alt={`Brand ${index + 1}`} />
+              </div>
+            ))}
+          </div>
+          {brandSlideIndex === 0 && (
+            <LiquidGlass
+              displacementScale={64}
+              blurAmount={0.1}
+              saturation={130}
+              aberrationIntensity={2}
+              elasticity={0.35}
+              cornerRadius={100}
+              padding="8px 32px"
+              className="liquid-glass-button"
+              style={{
+                position: "absolute",
+                top: "88%",
+                left: "50%",
+                transform: "translateX(-50%)",
+                cursor: "pointer",
+                
+              }}
+              onClick={() => navigate("/product-list/all-items")}
+            >
+              <div className="liquid-glass-button-text">All Items</div>
+            </LiquidGlass>
+          )}
+        </div>
+        <div className="brand-carousel-dots">
+          {brandSlides.map((_, index) => (
+            <button
+              key={index}
+              className={`image-select-button ${index === brandSlideIndex ? "selected" : ""}`}
+              onClick={() => {
+                setBrandSlideIndex(index);
+                setBrandResetKey((k) => k + 1);
+              }}
+            />
+          ))}
+        </div>
+      </section>
       <section className="marquee">
         <div className="track">
           <div className="item">
@@ -156,7 +233,7 @@ const HomePage = () => {
             <div
               className="newest-items-track"
               style={{
-                transform: `translateX(-${trackOffset * (200 + 16)}px)`,
+                transform: `translateX(calc(-${trackOffset} * var(--card-slide-width)))`,
               }}
             >
               {newestProducts.map((product) => (

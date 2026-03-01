@@ -206,3 +206,47 @@
 #productBrand {
   position: relative;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .catalog-create-container {
+    width: calc(100vw - 32px);
+    max-height: calc(100vh - 64px);
+    overflow-y: auto;
+    padding: 20px 16px;
+    border-radius: 16px;
+    gap: 20px;
+  }
+
+  .catalog-create-container h2 {
+    font-size: 18px;
+  }
+
+  .catalog-create-close-button {
+    top: 16px;
+    right: 16px;
+  }
+
+  .catalog-create-input-field {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+
+  .catalog-create-image-upload,
+  .catalog-create-image-preview {
+    max-height: 200px;
+  }
+
+  .catalog-create-form-separate-group {
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .catalog-create-form-button-group {
+    gap: 12px;
+  }
+
+  .catalog-create-container textarea {
+    height: 60px;
+  }
+}

@@ -60,3 +60,16 @@
 #checkout-button:hover {
   opacity: 0.9;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .checkout-container {
+    padding: 0 16px;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .checkout-form {
+    max-width: 100%;
+  }
+}

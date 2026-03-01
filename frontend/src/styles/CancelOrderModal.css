@@ -76,3 +76,31 @@
 #cancel-order-confirm-button:hover {
   color: var(--primary-color-darker);
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .cancel-order-container {
+    width: calc(100vw - 32px);
+    height: auto;
+    min-height: unset;
+    padding: 20px 16px;
+    border-radius: 16px;
+  }
+
+  .cancel-order-reason-field textarea {
+    height: 120px;
+    font-size: 14px;
+  }
+
+  .cancel-order-close-button {
+    top: 16px;
+    right: 16px;
+  }
+
+  #cancel-order-confirm-button {
+    position: static;
+    margin-top: 16px;
+    display: block;
+    text-align: right;
+  }
+}

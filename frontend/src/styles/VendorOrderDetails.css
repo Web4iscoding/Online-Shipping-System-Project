@@ -164,3 +164,31 @@
 #vendor-order-confirm-shipment-button:hover {
   opacity: 0.9;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .vendor-order-details-container {
+    padding: 0 16px;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .vendor-order-header {
+    padding: 16px;
+  }
+
+  .vendor-order-button-field {
+    position: static;
+    margin-top: 8px;
+  }
+
+  .vendor-order-details {
+    padding: 16px;
+  }
+
+  .vendor-order-footer {
+    flex-direction: column;
+    padding: 16px;
+    gap: 24px;
+  }
+}

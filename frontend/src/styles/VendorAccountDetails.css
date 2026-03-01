@@ -86,3 +86,16 @@
   gap: 16px;
   max-width: 500px;
 }
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .vendor-account-details-container {
+    padding: 0 16px;
+    margin: 24px auto;
+    gap: 24px;
+  }
+
+  .vendor-account-details-content form {
+    max-width: 100%;
+  }
+}
