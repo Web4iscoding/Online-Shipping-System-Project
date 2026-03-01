@@ -117,6 +117,24 @@ export const auth = {
     apiCall("/auth/me/", {
       method: "GET",
     }),
+
+  changePassword: (currentPassword, newPassword, confirmPassword) =>
+    apiCall("/auth/change-password/", {
+      method: "POST",
+      body: JSON.stringify({
+        current_password: currentPassword,
+        new_password: newPassword,
+        confirm_password: confirmPassword,
+      }),
+    }),
+
+  updateProfile: (data) => {
+    const isFormData = data instanceof FormData;
+    return apiCall("/auth/update-profile/", {
+      method: "PATCH",
+      body: isFormData ? data : JSON.stringify(data),
+    });
+  },
 };
 
 // Product Endpoints
@@ -159,6 +177,16 @@ export const products = {
 
   onSale: () =>
     apiCall("/products/on_sale/", {
+      method: "GET",
+    }),
+
+  inStock: (page = 1) =>
+    apiCall(`/products/in_stock/?page=${page}`, {
+      method: "GET",
+    }),
+
+  newest: () =>
+    apiCall("/products/newest/", {
       method: "GET",
     }),
 };
@@ -296,16 +324,22 @@ export const reviews = {
       method: "GET",
     }),
 
-  create: (orderItemID, comment, date, rating) =>
-    apiCall("/reviews/", {
-      method: "POST",
-      body: JSON.stringify({
-        orderItemID,
-        comment,
-        date,
-        rating,
-      }),
+  byProduct: (productId) =>
+    apiCall(`/reviews/by_product/?product_id=${productId}`, {
+      method: "GET",
     }),
+
+  create: (orderItemID, comment, rating, images = []) => {
+    const formData = new FormData();
+    formData.append("orderItemID", orderItemID);
+    formData.append("comment", comment);
+    formData.append("rating", rating);
+    images.forEach((image) => formData.append("images", image));
+    return apiCall("/reviews/", {
+      method: "POST",
+      body: formData,
+    });
+  },
 };
 
 // Vendor Endpoints
@@ -315,6 +349,42 @@ export const vendor = {
     apiCall("/vendor/my_store/", {
       method: "GET",
     }),
+
+  updateStore: (data) =>
+    apiCall("/vendor/update_store/", {
+      method: "PATCH",
+      body: JSON.stringify(data),
+    }),
+
+  uploadStorePhoto: (imageFile, isPrimary = false, sortedOrder = 0) => {
+    const formData = new FormData();
+    formData.append("image", imageFile);
+    formData.append("isPrimary", isPrimary);
+    formData.append("sortedOrder", sortedOrder);
+    return apiCall("/vendor/upload_store_photo/", {
+      method: "POST",
+      headers: {},
+      body: formData,
+    });
+  },
+
+  deleteStorePhoto: (photoID) =>
+    apiCall(`/vendor/delete_store_photo/?photo_id=${photoID}`, {
+      method: "DELETE",
+    }),
+
+  updateStorePhoto: (photoID, { isPrimary, sortedOrder, imageFile } = {}) => {
+    const formData = new FormData();
+    formData.append("photo_id", photoID);
+    if (isPrimary !== undefined) formData.append("isPrimary", isPrimary);
+    if (sortedOrder !== undefined) formData.append("sortedOrder", sortedOrder);
+    if (imageFile) formData.append("image", imageFile);
+    return apiCall("/vendor/update_store_photo/", {
+      method: "PUT",
+      headers: {},
+      body: formData,
+    });
+  },
 
   myProducts: (search = "") =>
     apiCall(`/vendor/my_products/?search=${search}`, {
@@ -457,5 +527,52 @@ export const vendor = {
     apiCall("/vendor/dismiss_refund_request/", {
       method: "PUT",
       body: JSON.stringify({ order_id: orderID }),
+    }),
+
+  // Promotion / Discount Management
+  myPromotions: () =>
+    apiCall("/vendor/my_promotions/", {
+      method: "GET",
+    }),
+
+  createPromotion: (productID, discountRate, startDate, endDate) =>
+    apiCall("/vendor/create_promotion/", {
+      method: "POST",
+      body: JSON.stringify({
+        productID,
+        discountRate,
+        startDate,
+        endDate,
+      }),
+    }),
+
+  deletePromotion: (promotionID) =>
+    apiCall(`/vendor/delete_promotion/?promotion_id=${promotionID}`, {
+      method: "DELETE",
+    }),
+};
+
+// Notification Endpoints
+
+export const notifications = {
+  list: () =>
+    apiCall("/notifications/", {
+      method: "GET",
+    }),
+
+  unreadCount: () =>
+    apiCall("/notifications/unread_count/", {
+      method: "GET",
+    }),
+
+  markRead: (notificationID) =>
+    apiCall("/notifications/mark_read/", {
+      method: "PUT",
+      body: JSON.stringify({ notification_id: notificationID }),
+    }),
+
+  markAllRead: () =>
+    apiCall("/notifications/mark_all_read/", {
+      method: "PUT",
     }),
 };

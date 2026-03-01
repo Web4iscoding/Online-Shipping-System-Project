@@ -13,6 +13,7 @@ import gucci from "../../../assets/gucci.png";
 import { vendor as vendorAPI, API_BASE } from "../../../api";
 import CatalogCreateModal from "../../modals/CatalogCreateModal";
 import ModalBackdrop from "../../common/ModalBackdrop";
+import noImage from "../../../assets/no_image_available.jpg";
 
 const CatalogCard = ({
   productName = "Lorem Ipsum Dolor Sit",
@@ -148,7 +149,7 @@ const Catalog = () => {
           />
           <input
             type="text"
-            placeholder="Search products"
+            placeholder="Search products..."
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           ></input>
@@ -169,7 +170,11 @@ const Catalog = () => {
             createdTime={product.createdTime}
             updatedTime={product.updatedTime}
             isHidden={product.isHidden}
-            src={`${API_BASE}${product.media[0]?.mediaURL}`}
+            src={
+              product.media[0]?.mediaURL
+                ? `${API_BASE}${product.media[0]?.mediaURL}`
+                : noImage
+            }
             handleEdit={handleEdit}
             handleClickCatalogCard={handleClickCatalogCard}
           />

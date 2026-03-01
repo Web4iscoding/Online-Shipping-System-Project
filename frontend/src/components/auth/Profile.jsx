@@ -13,6 +13,7 @@ import {
   SaleIcon,
   TruckCheckIcon,
   StoreEditIcon,
+  EyeOffIcon,
 } from "../../assets/icons";
 import { replace, useNavigate } from "react-router-dom";
 import "../../styles/Profile.css";
@@ -128,8 +129,14 @@ const VendorProfile = ({ user }) => {
         </button>
         <button
           className="profile-card"
-          style={{ visibility: "hidden" }}
-        ></button>
+          onClick={() => navigate("/vendor/account-details")}
+        >
+          <div className="profile-card-title">
+            <AccountDetailsIcon size={1.3} />
+            <h3>Account Details</h3>
+          </div>
+          <p>Update your account information</p>
+        </button>
       </div>
       <button className="logout" onClick={() => navigate("/logout")}>
         Logout

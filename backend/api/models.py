@@ -252,18 +252,13 @@ class Promotion(models.Model):
 
 # Represents a customer review for an ordered item.
 class Review(models.Model):
-    RATING_CHOICES = [
-        (1, '1 - Poor'),
-        (2, '2 - Fair'),
-        (3, '3 - Good'),
-        (4, '4 - Very Good'),
-        (5, '5 - Excellent'),
-    ]
-
     reviewID = models.AutoField(primary_key=True)
     orderItemID = models.OneToOneField(OrderItem, on_delete=models.CASCADE, related_name='review')
     comment = models.TextField()
-    rating = models.IntegerField(choices=RATING_CHOICES, default=5)
+    rating = models.DecimalField(
+        max_digits=2, decimal_places=1, default=5,
+        validators=[MinValueValidator(0.5), MaxValueValidator(5)]
+    )
     createdDate = models.DateTimeField(auto_now_add=True)
 
     class Meta:
@@ -271,3 +266,55 @@ class Review(models.Model):
 
     def __str__(self):
         return f"Review: {self.orderItemID.productName} - {self.rating} stars"
+
+
+# Represents images/media attached to a review (optional).
+class ReviewMedia(models.Model):
+    MEDIA_TYPE_CHOICES = [
+        ('image', 'Image'),
+        ('video', 'Video'),
+    ]
+
+    reviewMediaID = models.AutoField(primary_key=True)
+    reviewID = models.ForeignKey(Review, on_delete=models.CASCADE, related_name='media')
+    mediaURL = models.ImageField(upload_to='review_media/')
+    mediaType = models.CharField(max_length=10, choices=MEDIA_TYPE_CHOICES, default='image')
+    sortedOrder = models.IntegerField(default=0)
+
+    class Meta:
+        ordering = ['sortedOrder']
+
+    def __str__(self):
+        return f"ReviewMedia: Review {self.reviewID.reviewID} ({self.mediaType})"
+
+
+# Represents a notification sent to a user (customer or vendor).
+class Notification(models.Model):
+    NOTIFICATION_TYPE_CHOICES = [
+        ('wishlist_sale', 'Wishlist Item On Sale'),
+        ('order_shipped', 'Order Shipped'),
+        ('order_holding', 'Order On Hold'),
+        ('refund_approved', 'Refund Approved'),
+        ('order_cancelled', 'Order Cancelled'),
+        ('new_order', 'New Order Received'),
+        ('refund_request', 'Refund Requested'),
+    ]
+
+    notificationID = models.AutoField(primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='notifications')
+    notificationType = models.CharField(max_length=30, choices=NOTIFICATION_TYPE_CHOICES)
+    title = models.CharField(max_length=200)
+    message = models.TextField(blank=True)
+    link = models.CharField(max_length=500, blank=True)
+    isRead = models.BooleanField(default=False)
+    createdTime = models.DateTimeField(auto_now_add=True)
+
+    # Optional references for context
+    orderID = models.ForeignKey(Order, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications')
+    productID = models.ForeignKey(Product, on_delete=models.SET_NULL, null=True, blank=True, related_name='notifications')
+
+    class Meta:
+        ordering = ['-createdTime']
+
+    def __str__(self):
+        return f"Notification: {self.user.username} - {self.notificationType} - {'Read' if self.isRead else 'Unread'}"

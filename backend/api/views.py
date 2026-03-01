@@ -5,21 +5,24 @@ from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
+from django.utils import timezone
 from rest_framework.authtoken.models import Token
 from decimal import Decimal
 
 from .models import (
-    Customer, Vendor, Store, Product, ProductMedia, Category, Brand,
-    CartItem, Order, OrderItem, WishlistItem, Promotion, Review
+    Customer, Vendor, Store, StorePhoto, Product, ProductMedia, Category, Brand,
+    CartItem, Order, OrderItem, WishlistItem, Promotion, Review, ReviewMedia, Notification
 )
 from .serializers import (
     CustomerSerializer, VendorSerializer, CustomerRegisterSerializer,
-    VendorRegisterSerializer, LoginSerializer,
+    VendorRegisterSerializer, LoginSerializer, ChangePasswordSerializer,
+    CustomerUpdateSerializer, VendorUpdateSerializer,
     ProductListSerializer, ProductDetailSerializer, StoreSerializer,
     ProductCreateUpdateSerializer, CartItemSerializer, OrderSerializer, OrderItemSerializer,
-    WishlistItemSerializer, ReviewSerializer, PromotionSerializer,
+    WishlistItemSerializer, ReviewSerializer, ReviewMediaSerializer, ProductReviewSerializer,
+    PromotionSerializer, NotificationSerializer,
     BrandSerializer, CategorySerializer, VendorOrderSerializer, VendorOrderItemSerializer,
-    ProductMediaSerializer
+    ProductMediaSerializer, StorePhotoSerializer
 )
 
 
@@ -100,6 +103,59 @@ class LogoutView(APIView):
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
 
+class ChangePasswordView(APIView):
+    """Change password for authenticated user (customer or vendor)."""
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = ChangePasswordSerializer(data=request.data, context={'request': request})
+        if serializer.is_valid():
+            request.user.set_password(serializer.validated_data['new_password'])
+            request.user.save()
+            # Delete old token and create a new one
+            request.user.auth_token.delete()
+            token = Token.objects.create(user=request.user)
+            return Response({
+                'message': 'Password changed successfully',
+                'token': token.key
+            }, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class UpdateProfileView(APIView):
+    """Update profile attributes for the authenticated customer or vendor."""
+    permission_classes = [IsAuthenticated]
+
+    def patch(self, request):
+        user = request.user
+
+        if hasattr(user, 'customer_profile'):
+            serializer = CustomerUpdateSerializer(
+                user.customer_profile, data=request.data, partial=True,
+                context={'request': request}
+            )
+        elif hasattr(user, 'vendor_profile'):
+            serializer = VendorUpdateSerializer(
+                user.vendor_profile, data=request.data, partial=True,
+                context={'request': request}
+            )
+        else:
+            return Response({'error': 'No profile found for this user.'},
+                            status=status.HTTP_400_BAD_REQUEST)
+
+        if serializer.is_valid():
+            profile = serializer.save()
+            # Return updated profile using the read serializer
+            if hasattr(user, 'customer_profile'):
+                data = CustomerSerializer(profile).data
+                data['user_type'] = 'customer'
+            else:
+                data = VendorSerializer(profile).data
+                data['user_type'] = 'vendor'
+            return Response(data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
 class MeView(APIView):
     """Get current logged-in user's profile."""
     permission_classes = [IsAuthenticated]
@@ -140,6 +196,37 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         if self.action == 'retrieve':
             return ProductDetailSerializer
         return ProductListSerializer
+
+    def retrieve(self, request, *args, **kwargs):
+        """Override retrieve to add has_purchased boolean."""
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+
+        has_purchased = False
+        unreviewed_order_items = []
+        if request.user.is_authenticated and hasattr(request.user, 'customer_profile'):
+            customer = request.user.customer_profile
+            shipped_items = OrderItem.objects.filter(
+                productID=instance,
+                orderID__customerID=customer,
+                orderID__status='Shipped'
+            )
+            has_purchased = shipped_items.exists()
+
+            # Only allow one review per product per customer
+            already_reviewed = Review.objects.filter(
+                orderItemID__productID=instance,
+                orderItemID__orderID__customerID=customer
+            ).exists()
+            if not already_reviewed:
+                unreviewed_order_items = list(
+                    shipped_items.values_list('orderItemID', flat=True)[:1]
+                )
+
+        data['has_purchased'] = has_purchased
+        data['unreviewed_order_items'] = unreviewed_order_items
+        return Response(data)
 
     @action(detail=False, methods=['GET'])
     def by_brand(self, request):
@@ -197,6 +284,27 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
         serializer = ProductListSerializer(products, many=True)
         return Response(serializer.data)
 
+    @action(detail=False, methods=['GET'])
+    def in_stock(self, request):
+        """Get products with quantity > 0."""
+        products = self.get_queryset().filter(quantity__gt=0)
+        page = self.paginate_queryset(products)
+        if page is not None:
+            serializer = ProductListSerializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+        serializer = ProductListSerializer(products, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def newest(self, request):
+        """Get all newest products added within the last 30 days."""
+        one_month_ago = timezone.now() - timezone.timedelta(days=30)
+        products = self.get_queryset().filter(
+            createdTime__gte=one_month_ago
+        ).order_by('-createdTime')
+        serializer = ProductListSerializer(products, many=True)
+        return Response(serializer.data)
+
 
 class BrandViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving brands."""
@@ -229,6 +337,14 @@ class CartViewSet(viewsets.ViewSet):
     def list(self, request):
         """Get all items in a customer's cart."""
         customer = get_object_or_404(Customer, user=request.user)
+
+        # Remove cart items whose product is hidden or unavailable
+        CartItem.objects.filter(
+            customerID=customer
+        ).filter(
+            Q(productID__isHidden=True) | Q(productID__availability=False)
+        ).delete()
+
         cart_items = CartItem.objects.filter(customerID=customer).select_related('productID')
         serializer = CartItemSerializer(cart_items, many=True)
         
@@ -388,7 +504,22 @@ class OrderViewSet(viewsets.ViewSet):
         
         # Clear cart
         cart_items.delete()
-        
+
+        # Notify each vendor about their new order
+        for order in created_orders:
+            # Find the vendor user for this order's items
+            first_item = order.items.select_related('productID__storeID__vendorID__user').first()
+            if first_item and first_item.productID:
+                vendor_user = first_item.productID.storeID.vendorID.user
+                Notification.objects.create(
+                    user=vendor_user,
+                    notificationType='new_order',
+                    title='New Order Received',
+                    message=f'You received a new order #{order.orderID}.',
+                    link=f'/vendor/order-details/{order.orderID}',
+                    orderID=order,
+                )
+
         # Return all created orders
         serializer = OrderSerializer(created_orders, many=True)
         return Response({
@@ -438,6 +569,19 @@ class OrderViewSet(viewsets.ViewSet):
         order.refundRequest = True
         order.refundReason = reason
         order.save()
+
+        # Notify vendor about the refund request
+        first_item = order.items.select_related('productID__storeID__vendorID__user').first()
+        if first_item and first_item.productID:
+            vendor_user = first_item.productID.storeID.vendorID.user
+            Notification.objects.create(
+                user=vendor_user,
+                notificationType='refund_request',
+                title='Refund Request',
+                message=f'A refund has been requested for order #{order.orderID}.',
+                link=f'/vendor/order-details/{order.orderID}',
+                orderID=order,
+            )
 
         return Response({'message': 'Refund requested successfully'})
 
@@ -512,17 +656,14 @@ class ReviewViewSet(viewsets.ViewSet):
         return Response(serializer.data)
 
     def create(self, request):
-        """Create a review for an ordered item."""
+        """Create a review for an ordered item, with optional media uploads."""
         customer = get_object_or_404(Customer, user=request.user)
         order_item_id = request.data.get('orderItemID')
         comment = request.data.get('comment', '')
-        date = request.data.get('date')
         rating = request.data.get('rating', 5)
         
         if not order_item_id:
             return Response({'error': 'orderItemID required'}, status=status.HTTP_400_BAD_REQUEST)
-        if not date:
-            return Response({'error': 'date required'}, status=status.HTTP_400_BAD_REQUEST)
         
         order_item = get_object_or_404(
             OrderItem,
@@ -532,17 +673,50 @@ class ReviewViewSet(viewsets.ViewSet):
         
         if hasattr(order_item, 'review'):
             return Response({'error': 'Review already exists for this item'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
+        # One review per product per customer
+        product = order_item.productID
+        existing_review = Review.objects.filter(
+            orderItemID__productID=product,
+            orderItemID__orderID__customerID=customer
+        ).exists()
+        if existing_review:
+            return Response({'error': 'You have already reviewed this product'}, status=status.HTTP_400_BAD_REQUEST)
+
         review_obj = Review.objects.create(
             orderItemID=order_item,
             comment=comment,
-            date=date,
             rating=rating
         )
+
+        # Handle optional media uploads
+        images = request.FILES.getlist('images')
+        for idx, image in enumerate(images):
+            ReviewMedia.objects.create(
+                reviewID=review_obj,
+                mediaURL=image,
+                mediaType='image',
+                sortedOrder=idx,
+            )
         
         serializer = ReviewSerializer(review_obj)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
+    @action(detail=False, methods=['GET'], permission_classes=[AllowAny])
+    def by_product(self, request):
+        """Get all reviews for a specific product."""
+        product_id = request.query_params.get('product_id')
+        if not product_id:
+            return Response({'error': 'product_id required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        reviews = Review.objects.filter(
+            orderItemID__productID_id=product_id
+        ).select_related(
+            'orderItemID__orderID__customerID'
+        ).prefetch_related('media')
+
+        serializer = ProductReviewSerializer(reviews, many=True)
+        return Response(serializer.data)
 
 
 # Vendor Views
@@ -561,6 +735,97 @@ class VendorStoreViewSet(viewsets.ViewSet):
         vendor = self.get_vendor(request)
         store = get_object_or_404(Store, vendorID=vendor)
         serializer = StoreSerializer(store)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['PATCH'])
+    def update_store(self, request):
+        """Update storeName and/or description for the authenticated vendor's store."""
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        allowed_fields = {'storeName', 'description'}
+        for field in allowed_fields:
+            if field in request.data:
+                setattr(store, field, request.data[field])
+        store.save()
+
+        serializer = StoreSerializer(store)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'])
+    def upload_store_photo(self, request):
+        """Upload a photo for the vendor's store."""
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        image_file = request.FILES.get('image')
+        if not image_file:
+            return Response({'error': 'image file is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        is_primary = str(request.data.get('isPrimary', 'false')).lower() == 'true'
+        sorted_order = StorePhoto.objects.filter(storeID=store).count()
+
+        if is_primary:
+            StorePhoto.objects.filter(storeID=store, isPrimary=True).update(isPrimary=False)
+
+        photo = StorePhoto.objects.create(
+            storeID=store,
+            photoURL=image_file,
+            isPrimary=is_primary,
+            sortedOrder=sorted_order,
+        )
+        serializer = StorePhotoSerializer(photo)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['DELETE'])
+    def delete_store_photo(self, request):
+        """Delete a store photo. Required query param: ?photo_id=<storePhotoID>"""
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        photo_id = request.query_params.get('photo_id')
+        if not photo_id:
+            return Response({'error': 'photo_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        photo = get_object_or_404(StorePhoto, storePhotoID=photo_id, storeID=store)
+        photo.delete()
+
+        for i, remaining in enumerate(StorePhoto.objects.filter(storeID=store).order_by('sortedOrder')):
+            remaining.sortedOrder = i
+            remaining.save(update_fields=['sortedOrder'])
+
+        return Response({'message': 'Store photo deleted successfully'}, status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=['PUT'])
+    def update_store_photo(self, request):
+        """Update a store photo's attributes or replace the image."""
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        photo_id = request.data.get('photo_id')
+        if not photo_id:
+            return Response({'error': 'photo_id is required'}, status=status.HTTP_400_BAD_REQUEST)
+
+        photo = get_object_or_404(StorePhoto, storePhotoID=photo_id, storeID=store)
+
+        is_primary = request.data.get('isPrimary')
+        sorted_order = request.data.get('sortedOrder')
+        image_file = request.FILES.get('image')
+
+        if is_primary is not None:
+            is_primary_bool = str(is_primary).lower() == 'true'
+            if is_primary_bool:
+                StorePhoto.objects.filter(storeID=store, isPrimary=True).update(isPrimary=False)
+            photo.isPrimary = is_primary_bool
+
+        if sorted_order is not None:
+            photo.sortedOrder = int(sorted_order)
+
+        if image_file:
+            photo.photoURL = image_file
+
+        photo.save()
+        serializer = StorePhotoSerializer(photo)
         return Response(serializer.data)
 
     @action(detail=False, methods=['GET'])
@@ -714,7 +979,7 @@ class VendorStoreViewSet(viewsets.ViewSet):
         
         # Get optional parameters
         is_primary = request.data.get('isPrimary', 'false').lower() == 'true'
-        sorted_order = int(request.data.get('sortedOrder', 0))
+        sorted_order = ProductMedia.objects.filter(productID=product).count()
         
         # If this is set as primary, unset other primary images
         if is_primary:
@@ -756,6 +1021,11 @@ class VendorStoreViewSet(viewsets.ViewSet):
         )
         
         product_media.delete()
+
+        for i, remaining in enumerate(ProductMedia.objects.filter(productID=product_media.productID).order_by('sortedOrder')):
+            remaining.sortedOrder = i
+            remaining.save(update_fields=['sortedOrder'])
+
         return Response(
             {'message': 'Product image deleted successfully'},
             status=status.HTTP_204_NO_CONTENT
@@ -942,7 +1212,24 @@ class VendorStoreViewSet(viewsets.ViewSet):
             order.cancellationReason = reason
         
         order.save()
-        
+
+        # Create notification for the customer
+        notification_map = {
+            'Shipped': ('order_shipped', 'Order Shipped', f'Your order #{order.orderID} has been shipped!'),
+            'Holding': ('order_holding', 'Order On Hold', f'Your order #{order.orderID} is on hold.'),
+            'Cancelled': ('order_cancelled', 'Order Cancelled', f'Your order #{order.orderID} has been cancelled.'),
+        }
+        if new_status in notification_map:
+            ntype, title, message = notification_map[new_status]
+            Notification.objects.create(
+                user=order.customerID.user,
+                notificationType=ntype,
+                title=title,
+                message=message,
+                link=f'/customer/order-details/{order.orderID}',
+                orderID=order,
+            )
+
         return Response({
             'message': f'Order status updated to {new_status}',
             'order_id': order_id,
@@ -976,7 +1263,208 @@ class VendorStoreViewSet(viewsets.ViewSet):
         order.refundReason = None
         order.save()
 
+        # Notify customer that refund was approved / dismissed
+        Notification.objects.create(
+            user=order.customerID.user,
+            notificationType='refund_approved',
+            title='Refund Approved',
+            message=f'Your refund request for order #{order.orderID} has been approved.',
+            link=f'/customer/order-details/{order.orderID}',
+            orderID=order,
+        )
+
         return Response({
             'message': 'Refund request dismissed',
             'order_id': order_id,
         })
+
+    @action(detail=False, methods=['GET'])
+    def my_promotions(self, request):
+        """Get all promotions for the vendor's products."""
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        # Auto-update status based on dates
+        from django.utils import timezone
+        now = timezone.now()
+        Promotion.objects.filter(
+            productID__storeID=store,
+            status='Active',
+            endDate__lt=now
+        ).update(status='Inactive')
+        Promotion.objects.filter(
+            productID__storeID=store,
+            status='Inactive',
+            startDate__lte=now,
+            endDate__gte=now
+        ).update(status='Active')
+
+        promotions = Promotion.objects.filter(
+            productID__storeID=store
+        ).select_related('productID').prefetch_related('productID__media')
+        serializer = PromotionSerializer(promotions, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['POST'])
+    def create_promotion(self, request):
+        """
+        Create a promotion/discount for a product.
+        Required body params:
+            - productID: ID of the product
+            - discountRate: Discount percentage (0-100)
+            - startDate: Start date (ISO format)
+            - endDate: End date (ISO format)
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        product_id = request.data.get('productID')
+        discount_rate = request.data.get('discountRate')
+        start_date = request.data.get('startDate')
+        end_date = request.data.get('endDate')
+
+        if not all([product_id, discount_rate, start_date, end_date]):
+            return Response(
+                {'error': 'productID, discountRate, startDate, and endDate are required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        product = get_object_or_404(Product, productID=product_id, storeID=store)
+
+        # Determine status based on dates
+        from django.utils import timezone
+        from datetime import datetime
+        now = timezone.now()
+
+        # Parse dates
+        try:
+            from django.utils.dateparse import parse_datetime, parse_date
+            from datetime import time as dt_time
+
+            def parse_to_aware(value):
+                dt = parse_datetime(value)
+                if dt is not None:
+                    # make aware if naive
+                    if timezone.is_naive(dt):
+                        dt = timezone.make_aware(dt)
+                    return dt
+                d = parse_date(value)
+                if d:
+                    return timezone.make_aware(datetime.combine(d, dt_time.min))
+                return None
+
+            parsed_start = parse_to_aware(start_date)
+            parsed_end = parse_to_aware(end_date)
+            # end of day for end date when only a date string is given
+            if parse_datetime(end_date) is None and parse_date(end_date):
+                d = parse_date(end_date)
+                parsed_end = timezone.make_aware(datetime.combine(d, dt_time.max))
+        except Exception:
+            return Response(
+                {'error': 'Invalid date format'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        if parsed_start is None or parsed_end is None:
+            return Response(
+                {'error': 'Invalid date format'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        promo_status = 'Active' if parsed_start <= now <= parsed_end else 'Inactive'
+
+        promotion = Promotion.objects.create(
+            productID=product,
+            discountRate=discount_rate,
+            startDate=parsed_start,
+            endDate=parsed_end,
+            status=promo_status
+        )
+
+        # Notify customers who have this product in their wishlist
+        wishlist_items = WishlistItem.objects.filter(
+            productID=product
+        ).select_related('customerID__user')
+        for wi in wishlist_items:
+            Notification.objects.create(
+                user=wi.customerID.user,
+                notificationType='wishlist_sale',
+                title='Wishlist Item On Sale',
+                message=f'{product.productName} is now {discount_rate}% off!',
+                link=f'/product/{product.productID}',
+                productID=product,
+            )
+
+        serializer = PromotionSerializer(promotion)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    @action(detail=False, methods=['DELETE'])
+    def delete_promotion(self, request):
+        """
+        Delete a promotion.
+        Required query param: ?promotion_id=<promotionID>
+        """
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        promotion_id = request.query_params.get('promotion_id')
+        if not promotion_id:
+            return Response(
+                {'error': 'promotion_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        promotion = get_object_or_404(
+            Promotion,
+            promotionID=promotion_id,
+            productID__storeID=store
+        )
+        promotion.delete()
+
+        return Response(
+            {'message': 'Promotion deleted successfully'},
+            status=status.HTTP_204_NO_CONTENT
+        )
+
+
+# Notification Views
+
+class NotificationViewSet(viewsets.ViewSet):
+    """ViewSet for managing user notifications."""
+    permission_classes = [IsAuthenticated]
+
+    def list(self, request):
+        """Get all notifications for the authenticated user."""
+        notifications = Notification.objects.filter(user=request.user)
+        serializer = NotificationSerializer(notifications, many=True)
+        return Response(serializer.data)
+
+    @action(detail=False, methods=['GET'])
+    def unread_count(self, request):
+        """Get count of unread notifications."""
+        count = Notification.objects.filter(user=request.user, isRead=False).count()
+        return Response({'unread_count': count})
+
+    @action(detail=False, methods=['PUT'])
+    def mark_read(self, request):
+        """Mark a notification as read.
+        Required body param: notification_id
+        """
+        notification_id = request.data.get('notification_id')
+        if not notification_id:
+            return Response(
+                {'error': 'notification_id is required'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        notification = get_object_or_404(
+            Notification, notificationID=notification_id, user=request.user
+        )
+        notification.isRead = True
+        notification.save()
+        return Response({'message': 'Notification marked as read'})
+
+    @action(detail=False, methods=['PUT'])
+    def mark_all_read(self, request):
+        """Mark all notifications as read for the authenticated user."""
+        Notification.objects.filter(user=request.user, isRead=False).update(isRead=True)
+        return Response({'message': 'All notifications marked as read'})

@@ -134,6 +134,13 @@ export const AuthProvider = ({ children }) => {
   const isVendor = userType === "vendor";
   const isCustomer = userType === "customer";
 
+  const updateUser = useCallback((updatedData) => {
+    setUser((prev) => ({
+      ...prev,
+      ...updatedData,
+    }));
+  }, []);
+
   const value = {
     // State
     user,
@@ -150,6 +157,7 @@ export const AuthProvider = ({ children }) => {
     login,
     logout,
     setError,
+    updateUser,
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

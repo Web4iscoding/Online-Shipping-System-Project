@@ -1,0 +1,88 @@
+.vendor-account-details-container,
+.vendor-account-details-container * {
+  /* border: 1px solid red; */
+}
+
+.vendor-account-details-container {
+  padding: 0 var(--desktop-padding);
+  margin: 32px auto;
+  max-width: var(--max-width);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.vendor-account-details-container h3,
+.vendor-account-details-container h2 {
+  font-weight: 400;
+}
+
+.vendor-account-details-container button {
+  appearance: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+}
+
+.vendor-account-details-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.vendor-account-details-avatar {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.vendor-account-details-content > div:not(.vendor-account-details-header) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+#vendor-account-details-edit {
+  text-decoration: underline;
+  align-self: flex-start;
+}
+
+#vendor-account-details-edit:hover {
+  color: var(--primary-color);
+}
+.vendor-account-details-content > div {
+  border-bottom: 1px solid var(--primary-color-light);
+  padding: 32px 0;
+}
+
+.vendor-account-details-content > div:last-child {
+  border-bottom: none;
+}
+
+.vendor-account-details-content > div:first-child {
+  padding-top: 0;
+}
+
+#vendor-account-details-save {
+  padding: 8px 32px;
+  background: var(--primary-color-darker);
+  color: white;
+  width: 100%;
+}
+
+#vendor-account-details-save:hover {
+  opacity: 0.9;
+}
+
+.vendor-account-details-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 500px;
+}

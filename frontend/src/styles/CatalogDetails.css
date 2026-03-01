@@ -24,6 +24,14 @@
   color: var(--primary-color-light);
 }
 
+#catalog-details-edit-button {
+  text-decoration: underline;
+}
+
+#catalog-details-edit-button:hover {
+  color: var(--primary-color);
+}
+
 #catalog-details-add-image-button {
   display: flex;
   align-items: center;
@@ -232,7 +240,7 @@
 }
 
 .catalog-details-edits-input-group h4 {
-  color: var(--primary-color-light);
+  color: var(--primary-color);
 }
 
 .catalog-details-edit-input {
@@ -247,6 +255,13 @@
   border-color: var(--primary-color);
 }
 
+.catalog-details-edit-field-right form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
 .catalog-details-edits-input-group textarea {
   resize: none;
+  font: inherit;
 }

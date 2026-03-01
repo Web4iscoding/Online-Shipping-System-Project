@@ -48,6 +48,10 @@
   font-size: 14px;
 }
 
+.login-form button:hover {
+  opacity: 0.9;
+}
+
 .login-form button + div {
   text-align: center;
   font-size: 12px;

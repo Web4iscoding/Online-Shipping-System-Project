@@ -15,8 +15,8 @@
 }
 
 .catalog-create-container h2 {
-  color: var(--primary-color-light);
   font-weight: 400;
+  font-size: 20px;
 }
 
 .catalog-create-container {
@@ -149,6 +149,7 @@
 
 .catalog-create-container textarea {
   resize: none;
+  height: 80px;
 }
 
 .catalog-create-container input,
@@ -159,6 +160,7 @@
   font-size: 14px;
   border: 1px solid var(--primary-color-light);
   width: 100%;
+  font: inherit;
 }
 
 .catalog-create-container input:focus,
@@ -190,6 +192,10 @@
 #catalog-create-submit-button {
   background: var(--primary-color-darker);
   color: white;
+}
+
+#catalog-create-submit-button:hover {
+  opacity: 0.9;
 }
 
 .catalog-create-form-button-group {

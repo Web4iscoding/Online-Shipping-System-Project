@@ -11,12 +11,13 @@ import { cart as cartAPI, orders as OrdersAPI, API_BASE } from "../../api";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../../AuthContext";
-import { sumPrices } from "../common/Calculations";
 
 const CartItem = ({
   productID,
   productName,
   productPrice,
+  discountedPrice,
+  discountRate,
   ProductCartQuantity,
   productStock,
   productImage,
@@ -25,6 +26,7 @@ const CartItem = ({
 }) => {
   const isDecreaseDisabled = ProductCartQuantity <= 1;
   const isIncreaseDisabled = ProductCartQuantity >= productStock;
+  const hasDiscount = discountRate > 0;
 
   return (
     <div className="cart-item">
@@ -65,8 +67,15 @@ const CartItem = ({
 
       <h2 className="cart-item-title">{productName}</h2>
       <div className="cart-item-info">
-        <img src={productImage}></img>
-        <h3>${productPrice}</h3>
+        <img src={productImage} alt={productName} />
+        {hasDiscount ? (
+          <div className="cart-item-price-group">
+            <h3>${Number(discountedPrice).toFixed(2)}</h3>
+            <span className="cart-item-price-original">${Number(productPrice).toFixed(2)}</span>
+          </div>
+        ) : (
+          <h3>${productPrice}</h3>
+        )}
       </div>
     </div>
   );
@@ -83,12 +92,8 @@ const Cart = () => {
     async function performFetch() {
       const cartData = await cartAPI.list();
       console.log(cartData.items);
-      let priceList = [];
-      cartData.items.forEach((item) => {
-        priceList.push(item.product.price * item.quantity);
-      });
       setCartItems(cartData.items);
-      setTotalPrice(sumPrices(priceList));
+      setTotalPrice(cartData.total);
       setNumberOfItems(cartData.item_count);
     }
     performFetch();
@@ -139,7 +144,9 @@ const Cart = () => {
     <div className="cart-container">
       <div className="cart-header">
         <h2 className="cart-title">Shopping Cart</h2>
-        <p className="cart-items-count">{numberOfItems} items</p>
+        <p className="cart-items-count">
+          {numberOfItems} {numberOfItems === 1 ? "item" : "items"}
+        </p>
       </div>
       {numberOfItems === 0 && (
         <div className="no-cart-item-container">
@@ -155,6 +162,8 @@ const Cart = () => {
               productID={item.product.productID}
               productName={item.product.productName}
               productPrice={item.product.price}
+              discountedPrice={item.product.discounted_price}
+              discountRate={item.product.discount_rate}
               ProductCartQuantity={item.quantity}
               productStock={item.product.quantity}
               productImage={
@@ -190,6 +199,11 @@ const Cart = () => {
         >
           <CreditCardIcon />
           <p>Proceed to Checkout</p>
+        </button>
+      )}
+      {numberOfItems > 0 && (
+        <button id="continue-shopping-button" onClick={() => navigate("/product-list/all-items")}>
+          Continue Shopping
         </button>
       )}
     </div>

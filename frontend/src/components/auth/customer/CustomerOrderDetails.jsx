@@ -8,6 +8,7 @@ import { LeftArrowIcon } from "../../../assets/icons";
 import Order from "../customer/Order";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
+import SuccessWindow from "../../windows/SuccessWindow";
 
 const OrderItem = ({ orderItem }) => {
   return (
@@ -37,6 +38,7 @@ const CustomerOrderDetails = () => {
   const showRefundButton =
     orderData?.status === "Holding" || orderData?.status === "Pending";
   const [showRefundModal, setShowRefundModal] = useState(false);
+  const [showRefundSuccess, setShowRefundSuccess] = useState(false);
 
   useEffect(() => {
     async function performFetch() {
@@ -63,6 +65,7 @@ const CustomerOrderDetails = () => {
               refundReason: reason,
             }));
             setShowRefundModal(false);
+            setShowRefundSuccess(true);
           }}
           title="Do you want to request a refund for this order?"
           subtitle="The vendor will review your request and process the refund."
@@ -78,6 +81,12 @@ const CustomerOrderDetails = () => {
         <LeftArrowIcon />
         <p>Your Orders</p>
       </button>
+      {showRefundSuccess && (
+        <SuccessWindow
+          message="Refund request submitted successfully."
+          onClose={() => setShowRefundSuccess(false)}
+        />
+      )}
       <div className="customer-order-container">
         <div className="customer-order-header">
           {showRefundButton && !orderData?.refundRequest && (
@@ -88,7 +97,10 @@ const CustomerOrderDetails = () => {
               Request a refund
             </button>
           )}
-          <h2 className="customer-order-status">Order {orderData?.status}</h2>
+          <h2 className="customer-order-status">
+            Order {orderData?.status}{" "}
+            {orderData?.refundRequest && "(Refund Requested)"}
+          </h2>
           <p className="customer-order-date">
             Order Date: {orderData?.orderDate}
           </p>

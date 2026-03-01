@@ -59,6 +59,10 @@
   font-size: 14px;
 }
 
+.register-button:hover {
+  opacity: 0.9;
+}
+
 .shipping-address-label + input,
 .shipping-address-label + input + input {
   margin-bottom: 8px;

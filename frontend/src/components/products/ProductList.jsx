@@ -1,10 +1,11 @@
-import { useParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router-dom";
 import noImage from "../../assets/no_image_available.jpg";
 import { useState, useEffect } from "react";
 import {
   products as productsAPI,
   brands as brandsAPI,
   categories as categoriesAPI,
+  stores as storesAPI,
   API_BASE,
 } from "../../api";
 import "../../styles/ProductList.css";
@@ -49,6 +50,7 @@ const PlaceholderCard = () => (
 
 const ProductList = () => {
   const { filter, type, name } = useParams();
+  const [searchParams] = useSearchParams();
   const [products, setProducts] = useState([]);
   const [totalPages, setTotalPages] = useState(1);
   const [currentPage, setCurrentPage] = useState(1);
@@ -69,6 +71,15 @@ const ProductList = () => {
       return { type: "all", value: null };
     }
 
+    if (filter === "search") {
+      const query = searchParams.get("query") || "";
+      return { type: "search", value: query.trim() };
+    }
+
+    if (filter === "in-stock") {
+      return { type: "in-stock", value: null };
+    }
+
     const [parsedType, ...rest] = filter.split("/");
     const value = decodeURIComponent(rest.join("/")).trim();
 
@@ -85,7 +96,7 @@ const ProductList = () => {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [filter, type, name]);
+  }, [filter, type, name, searchParams]);
 
   useEffect(() => {
     let isMounted = true;
@@ -93,6 +104,7 @@ const ProductList = () => {
     async function performFetch() {
       if (isMounted) {
         setIsLoading(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
       }
 
       const { type, value } = parseFilter();
@@ -104,6 +116,28 @@ const ProductList = () => {
           setProducts(response.results);
           setTotalPages(Math.ceil(response.count / pageCount));
           setFilterLabel("All Items");
+          return;
+        }
+
+        if (type === "search") {
+          const response = await productsAPI.bySearch(value, currentPage);
+          if (!isMounted) return;
+          const results = response.results || response;
+          const count = response.count ?? results.length;
+          setProducts(results);
+          setTotalPages(Math.max(1, Math.ceil(count / pageCount)));
+          setFilterLabel(`Search / ${value}`);
+          return;
+        }
+
+        if (type === "in-stock") {
+          const response = await productsAPI.inStock(currentPage);
+          if (!isMounted) return;
+          const results = response.results || response;
+          const count = response.count ?? results.length;
+          setProducts(results);
+          setTotalPages(Math.max(1, Math.ceil(count / pageCount)));
+          setFilterLabel("In Stock");
           return;
         }
 
@@ -158,6 +192,19 @@ const ProductList = () => {
           setTotalPages(Math.max(1, Math.ceil(count / pageCount)));
           setFilterLabel(`Category / ${match.categoryName}`);
         }
+
+        if (type === "store") {
+          const [response, store] = await Promise.all([
+            productsAPI.byStore(value, currentPage),
+            storesAPI.detail(value),
+          ]);
+          if (!isMounted) return;
+          const results = response.results || response;
+          const count = response.count ?? results.length;
+          setProducts(results);
+          setTotalPages(Math.max(1, Math.ceil(count / pageCount)));
+          setFilterLabel(`Store / ${store.storeName ?? value}`);
+        }
       } catch (error) {
         if (!isMounted) return;
         setProducts([]);
@@ -172,7 +219,7 @@ const ProductList = () => {
     return () => {
       isMounted = false;
     };
-  }, [currentPage, filter, type, name]);
+  }, [currentPage, filter, type, name, searchParams]);
 
   return (
     <div className="product-list-container">

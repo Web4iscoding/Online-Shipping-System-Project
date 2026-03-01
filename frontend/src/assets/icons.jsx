@@ -39,6 +39,18 @@ import {
   mdiMenuDown,
   mdiCartArrowDown,
   mdiAlert,
+  mdiStarOutline,
+  mdiStar,
+  mdiStarHalfFull,
+  mdiPackageVariantClosed,
+  mdiPencilBoxOutline,
+  mdiHeart,
+  mdiHeartPlusOutline,
+  mdiHeartCircleOutline,
+  mdiClipboardRemoveOutline,
+  mdiClipboardAlertOutline,
+  mdiCashRefund,
+  mdiClipboardArrowDownOutline
 } from "@mdi/js";
 
 const BellIcon = ({ size = 1 }) => <Icon path={mdiBellOutline} size={size} />;
@@ -167,6 +179,50 @@ const AlertTriangleIcon = ({ size = 1 }) => (
   <Icon path={mdiAlert} size={size} />
 );
 
+const StarOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiStarOutline} size={size} />
+);
+
+const StarIcon = ({ size = 1 }) => <Icon path={mdiStar} size={size} />;
+
+const StarHalfFullIcon = ({ size = 1 }) => (
+  <Icon path={mdiStarHalfFull} size={size} />
+);
+
+const PackageIcon = ({ size = 1 }) => (
+  <Icon path={mdiPackageVariantClosed} size={size} />
+);
+
+const PencilBoxOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiPencilBoxOutline} size={size} />
+);
+
+const HeartFilledIcon = ({ size = 1 }) => <Icon path={mdiHeart} size={size} />;
+
+const HeartPlusOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiHeartPlusOutline} size={size} />
+);
+
+const HeartCircleOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiHeartCircleOutline} size={size} />
+);
+
+const ClipboardRemoveOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiClipboardRemoveOutline} size={size} />
+);
+
+const ClipboardAlertOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiClipboardAlertOutline} size={size} />
+);
+
+const CashRefundIcon = ({ size = 1 }) => (
+  <Icon path={mdiCashRefund} size={size} />
+);
+
+const ClipboardArrowDownOutlineIcon = ({ size = 1 }) => (
+  <Icon path={mdiClipboardArrowDownOutline} size={size} />
+);
+
 export {
   BellIcon,
   SearchIcon,
@@ -207,4 +263,16 @@ export {
   CartArrowDownIcon,
   AlertCircleFilledIcon,
   AlertTriangleIcon,
+  StarOutlineIcon,
+  StarIcon,
+  StarHalfFullIcon,
+  PackageIcon,
+  PencilBoxOutlineIcon,
+  HeartFilledIcon,
+  HeartPlusOutlineIcon,
+  HeartCircleOutlineIcon,
+  ClipboardRemoveOutlineIcon,
+  ClipboardAlertOutlineIcon,
+  CashRefundIcon,
+  ClipboardArrowDownOutlineIcon
 };

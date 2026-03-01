@@ -93,7 +93,10 @@ const VendorOrderDetails = () => {
           onClose={() => setShowOrderGeneralActionModal(false)}
           onConfirm={async () => {
             if (orderGeneralActionType === "Cancelled") {
-              await handleUpdateStatus("Cancelled", orderData?.refundReason || "Refund approved by vendor");
+              await handleUpdateStatus(
+                "Cancelled",
+                orderData?.refundReason || "Refund approved by vendor",
+              );
               await handleDismissRefund();
             } else {
               await handleUpdateStatus(orderGeneralActionType);
@@ -150,7 +153,8 @@ const VendorOrderDetails = () => {
           </div>
           <h2 className="vendor-order-status">
             {pendingRefund && <AlertTriangleIcon />}
-            {!pendingRefund && "Order " + orderData?.status} {pendingRefund && "Refund Requested From Customer"}{" "}
+            {!pendingRefund && "Order " + orderData?.status}{" "}
+            {pendingRefund && "Refund Requested From Customer"}{" "}
           </h2>
           <p className="vendor-order-date">
             Order Date: {orderData?.orderDate}

@@ -22,6 +22,7 @@ import {
   FileEditIcon,
 } from "../../../assets/icons";
 import SuccessWindow from "../../windows/SuccessWindow";
+import SortableImageThumbnails from "../../common/SortableImageThumbnails";
 import noImage from "../../../assets/no_image_available.jpg";
 
 const CatalogDetails = () => {
@@ -41,7 +42,7 @@ const CatalogDetails = () => {
   const [currentImage, setCurrentImage] = useState(null);
   const [currentImageID, setCurrentImageID] = useState(null);
   const [imageTransitioning, setImageTransitioning] = useState(false);
-  const [editData, setEditData] = useState({});
+  const [formData, setFormData] = useState({});
   const [showSuccess, setShowSuccess] = useState(false);
   const navigate = useNavigate();
 
@@ -68,6 +69,14 @@ const CatalogDetails = () => {
       setBrands(sortedBrands);
       setCategories(sortedCategories);
       setProduct(productData);
+      setFormData({
+        productName: productData.productName,
+        price: productData.price,
+        quantity: productData.quantity,
+        description: productData.description,
+        brand: productData.brand_id,
+        category: productData.category_id,
+      });
       setCurrentImage(
         productData.media[0]?.mediaURL
           ? `${API_BASE}${productData.media[0]?.mediaURL}`
@@ -88,46 +97,49 @@ const CatalogDetails = () => {
     }, 250);
   };
 
+  const resetIsEditing = () => ({
+    isProductNameEditing: false,
+    isPriceEditing: false,
+    isQuantityEditing: false,
+    isDescriptionEditing: false,
+    isBrandEditing: false,
+    isCategoryEditing: false,
+  });
+
+  const productToFormData = (p) => ({
+    productName: p.productName,
+    price: p.price,
+    quantity: p.quantity,
+    description: p.description,
+    brand: p.brand_id,
+    category: p.category_id,
+  });
+
   const handleEdit = (field) => {
-    setIsEditing({
-      isProductNameEditing: false,
-      isPriceEditing: false,
-      isQuantityEditing: false,
-      isDescriptionEditing: false,
-      isBrandEditing: false,
-      isCategoryEditing: false,
-      [field]: !isEditing[field],
-    });
-    setEditData({});
+    setIsEditing({ ...resetIsEditing(), [field]: true });
   };
 
   const handleChange = (e) => {
     const { id, value } = e.target;
-    setEditData((prev) => ({
-      ...prev,
-      [id]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [id]: value }));
   };
 
-  const isAnyFieldEditing = () => {
-    return Object.values(isEditing).some((value) => value === true);
+  const handleCancel = (field) => {
+    setIsEditing((prev) => ({ ...prev, [field]: false }));
+    setFormData(productToFormData(product));
   };
 
-  const handleSave = async () => {
+  const handleSave = async (e, fields) => {
+    e.preventDefault();
     try {
-      await VendorAPI.UpdateProduct(product.productID, editData);
+      const payload = Object.fromEntries(fields.map((f) => [f, formData[f]]));
+      await VendorAPI.UpdateProduct(product.productID, payload);
       const productData = await VendorAPI.getProduct(id);
       setProduct(productData);
-      setEditData({});
-      setIsEditing({
-        isProductNameEditing: false,
-        isPriceEditing: false,
-        isQuantityEditing: false,
-        isDescriptionEditing: false,
-        isBrandEditing: false,
-        isCategoryEditing: false,
-      });
+      setFormData(productToFormData(productData));
+      setIsEditing(resetIsEditing());
       setShowSuccess(true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } catch (err) {
       console.error("Save failed", err);
     }
@@ -138,15 +150,8 @@ const CatalogDetails = () => {
       await VendorAPI.UpdateProduct(product.productID, fieldsToBeUpdated);
       const productData = await VendorAPI.getProduct(id);
       setProduct(productData);
-      setEditData({});
-      setIsEditing({
-        isProductNameEditing: false,
-        isPriceEditing: false,
-        isQuantityEditing: false,
-        isDescriptionEditing: false,
-        isBrandEditing: false,
-        isCategoryEditing: false,
-      });
+      setFormData(productToFormData(productData));
+      setIsEditing(resetIsEditing());
     } catch (err) {
       console.error("Update failed", err);
     }
@@ -173,11 +178,6 @@ const CatalogDetails = () => {
             </div>
           </div>
           <div className="catalog-details-header-button-group">
-            {isAnyFieldEditing() && (
-              <button id="catalog-details-save-button" onClick={handleSave}>
-                <ContentSaveEditIcon />
-              </button>
-            )}
             <button
               id="catalog-details-hide-button"
               onClick={() => handleHeaderEdit({ isHidden: !product.isHidden })}
@@ -250,245 +250,358 @@ const CatalogDetails = () => {
                 />
               )}
             </div>
-            <div className="catalog-details-image-thumbnails">
-              {currentImage &&
-                product?.media?.map((media, index) => (
-                  <div
-                    key={index}
-                    className="catalog-details-image-thumbnail-container"
-                    onClick={() => {
-                      handleImageChange(
-                        `${API_BASE}${media.mediaURL}`,
-                        media.productMediaID,
+            {currentImage && product?.media?.length > 0 ? (
+              <SortableImageThumbnails
+                items={product.media}
+                idKey="productMediaID"
+                urlKey="mediaURL"
+                apiBase={API_BASE}
+                currentSelectedId={currentImageID}
+                onSelect={(imageUrl, imageId) =>
+                  handleImageChange(imageUrl, imageId)
+                }
+                onDelete={async (mediaId) => {
+                  try {
+                    await VendorAPI.deleteProductImage(mediaId);
+                    let productData = await VendorAPI.getProduct(id);
+                    if (productData.media.length !== 0) {
+                      await VendorAPI.updateProductImage(
+                        productData.media[0]?.productMediaID,
+                        { isPrimary: true },
                       );
-                    }}
-                  >
-                    <button
-                      id="catalog-details-delete-image-button"
-                      onClick={async (e) => {
-                        e.stopPropagation();
-                        try {
-                          await VendorAPI.deleteProductImage(
-                            media.productMediaID,
-                          );
-
-                          let productData = await VendorAPI.getProduct(id);
-                          if (productData.media.length !== 0) {
-                            await VendorAPI.updateProductImage(
-                              productData.media[0]?.productMediaID,
-                              { isPrimary: true },
-                            );
-                          }
-                          productData.media[0] = {
-                            ...productData.media[0],
-                            isPrimary: true,
-                          };
-                          setProduct(productData);
-                          const updatedMedia = productData.media.find(
-                            (m) => m.productMediaID === currentImageID,
-                          );
-                          if (updatedMedia) {
-                            setCurrentImage(
-                              `${API_BASE}${updatedMedia.mediaURL}`,
-                            );
-                            setCurrentImageID(updatedMedia.productMediaID);
-                          } else {
-                            setCurrentImage(
-                              productData.media[0]?.mediaURL
-                                ? `${API_BASE}${productData.media[0]?.mediaURL}`
-                                : null,
-                            );
-                            setCurrentImageID(
-                              productData.media[0]?.productMediaID || null,
-                            );
-                          }
-                        } catch (err) {
-                          console.error("Delete failed", err);
-                        }
-                      }}
-                    >
-                      <CloseIcon size={0.6} />
-                    </button>
-                    <img src={`${API_BASE}${media.mediaURL}`} />
-                  </div>
-                ))}
-              <div className="catalog-details-image-thumbnail-container">
-                <label
-                  htmlFor="catalog-details-add-image-input"
-                  id="catalog-details-add-image-button"
-                >
-                  <ImagePlusIcon />
-                </label>
-                <input
-                  type="file"
-                  id="catalog-details-add-image-input"
-                  accept="image/*"
-                  style={{ display: "none" }}
-                  onChange={async (e) => {
-                    const file = e.target.files[0];
-                    if (!file) return;
-
-                    try {
-                      const hasImage = currentImage ? false : true;
-                      await VendorAPI.uploadProductImage(
-                        product.productID,
-                        file,
-                        hasImage,
-                      );
-
-                      const productData = await VendorAPI.getProduct(id);
-                      setProduct(productData);
-                      const newMedia =
-                        productData.media[productData.media.length - 1];
-                      setCurrentImage(`${API_BASE}${newMedia?.mediaURL}`);
-                      setCurrentImageID(newMedia?.productMediaID || null);
-                      e.target.value = null;
-                    } catch (err) {
-                      console.error("Upload failed", err);
                     }
-                  }}
-                />
+                    productData.media[0] = {
+                      ...productData.media[0],
+                      isPrimary: true,
+                    };
+                    setProduct(productData);
+                    const updatedMedia = productData.media.find(
+                      (m) => m.productMediaID === currentImageID,
+                    );
+                    if (updatedMedia) {
+                      setCurrentImage(`${API_BASE}${updatedMedia.mediaURL}`);
+                      setCurrentImageID(updatedMedia.productMediaID);
+                    } else {
+                      setCurrentImage(
+                        productData.media[0]?.mediaURL
+                          ? `${API_BASE}${productData.media[0]?.mediaURL}`
+                          : null,
+                      );
+                      setCurrentImageID(
+                        productData.media[0]?.productMediaID || null,
+                      );
+                    }
+                  } catch (err) {
+                    console.error("Delete failed", err);
+                  }
+                }}
+                onReorder={async (reorderedItems) => {
+                  try {
+                    await Promise.all(
+                      reorderedItems.map((media, index) =>
+                        VendorAPI.updateProductImage(media.productMediaID, {
+                          sortedOrder: index,
+                          isPrimary: index === 0,
+                        }),
+                      ),
+                    );
+                    const productData = await VendorAPI.getProduct(id);
+                    setProduct(productData);
+                  } catch (err) {
+                    console.error("Reorder failed", err);
+                  }
+                }}
+                onAddImage={async (file) => {
+                  try {
+                    const hasImage = currentImage ? false : true;
+                    await VendorAPI.uploadProductImage(
+                      product.productID,
+                      file,
+                      hasImage,
+                    );
+                    const productData = await VendorAPI.getProduct(id);
+                    setProduct(productData);
+                    const newMedia =
+                      productData.media[productData.media.length - 1];
+                    setCurrentImage(`${API_BASE}${newMedia?.mediaURL}`);
+                    setCurrentImageID(newMedia?.productMediaID || null);
+                  } catch (err) {
+                    console.error("Upload failed", err);
+                  }
+                }}
+                addButtonId="catalog-details-add-image-button"
+                addInputId="catalog-details-add-image-input"
+                thumbnailsClassName="catalog-details-image-thumbnails"
+              />
+            ) : (
+              <div className="catalog-details-image-thumbnails">
+                <div className="catalog-details-image-thumbnail-container">
+                  <label
+                    htmlFor="catalog-details-add-image-input"
+                    id="catalog-details-add-image-button"
+                  >
+                    <ImagePlusIcon />
+                  </label>
+                  <input
+                    type="file"
+                    id="catalog-details-add-image-input"
+                    accept="image/*"
+                    style={{ display: "none" }}
+                    onChange={async (e) => {
+                      const file = e.target.files[0];
+                      if (!file) return;
+                      try {
+                        await VendorAPI.uploadProductImage(
+                          product.productID,
+                          file,
+                          true,
+                        );
+                        const productData = await VendorAPI.getProduct(id);
+                        setProduct(productData);
+                        const newMedia =
+                          productData.media[productData.media.length - 1];
+                        setCurrentImage(`${API_BASE}${newMedia?.mediaURL}`);
+                        setCurrentImageID(newMedia?.productMediaID || null);
+                        e.target.value = null;
+                      } catch (err) {
+                        console.error("Upload failed", err);
+                      }
+                    }}
+                  />
+                </div>
               </div>
-            </div>
+            )}
           </div>
           <div className="catalog-details-edit-field-right">
             <div className="catalog-details-edits-input-group">
               <h4>
                 Product Name
-                <button
-                  id="catalog-details-edit-button"
-                  onClick={() => handleEdit("isProductNameEditing")}
-                >
-                  <FileEditIcon />
-                </button>
+                {!isEditing.isProductNameEditing && (
+                  <button
+                    type="button"
+                    id="catalog-details-edit-button"
+                    onClick={() => handleEdit("isProductNameEditing")}
+                  >
+                    Edit
+                  </button>
+                )}
               </h4>
               {!isEditing.isProductNameEditing && <p>{product?.productName}</p>}
               {isEditing.isProductNameEditing && (
-                <input
-                  type="text"
-                  id="productName"
-                  defaultValue={product?.productName}
-                  onChange={handleChange}
-                  className="catalog-details-edit-input"
-                />
+                <form onSubmit={(e) => handleSave(e, ["productName"])}>
+                  <input
+                    type="text"
+                    id="productName"
+                    value={formData.productName ?? ""}
+                    onChange={handleChange}
+                    className="catalog-details-edit-input"
+                    required
+                  />
+                  <button type="submit" id="vendor-account-details-save">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="vendor-account-details-edit"
+                    onClick={() => handleCancel("isProductNameEditing")}
+                  >
+                    Cancel
+                  </button>
+                </form>
               )}
             </div>
             <div className="catalog-details-edits-input-group">
               <h4>
                 Price
-                <button
-                  id="catalog-details-edit-button"
-                  onClick={() => handleEdit("isPriceEditing")}
-                >
-                  <FileEditIcon />
-                </button>
+                {!isEditing.isPriceEditing && (
+                  <button
+                    type="button"
+                    id="catalog-details-edit-button"
+                    onClick={() => handleEdit("isPriceEditing")}
+                  >
+                    Edit
+                  </button>
+                )}
               </h4>
               {!isEditing.isPriceEditing && <p>${product?.price}</p>}
               {isEditing.isPriceEditing && (
-                <input
-                  type="number"
-                  id="price"
-                  defaultValue={product?.price}
-                  onChange={handleChange}
-                  className="catalog-details-edit-input"
-                  min={0}
-                />
+                <form onSubmit={(e) => handleSave(e, ["price"])}>
+                  <input
+                    type="number"
+                    id="price"
+                    value={formData.price ?? ""}
+                    onChange={handleChange}
+                    className="catalog-details-edit-input"
+                    min={0}
+                    required
+                  />
+                  <button type="submit" id="vendor-account-details-save">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="vendor-account-details-edit"
+                    onClick={() => handleCancel("isPriceEditing")}
+                  >
+                    Cancel
+                  </button>
+                </form>
               )}
             </div>
             <div className="catalog-details-edits-input-group">
               <h4>
                 Quantity
-                <button
-                  id="catalog-details-edit-button"
-                  onClick={() => handleEdit("isQuantityEditing")}
-                >
-                  <FileEditIcon />
-                </button>
+                {!isEditing.isQuantityEditing && (
+                  <button
+                    type="button"
+                    id="catalog-details-edit-button"
+                    onClick={() => handleEdit("isQuantityEditing")}
+                  >
+                    Edit
+                  </button>
+                )}
               </h4>
               {!isEditing.isQuantityEditing && <p>{product?.quantity}</p>}
               {isEditing.isQuantityEditing && (
-                <input
-                  type="number"
-                  id="quantity"
-                  defaultValue={product?.quantity}
-                  onChange={handleChange}
-                  className="catalog-details-edit-input"
-                  min={0}
-                />
+                <form onSubmit={(e) => handleSave(e, ["quantity"])}>
+                  <input
+                    type="number"
+                    id="quantity"
+                    value={formData.quantity ?? ""}
+                    onChange={handleChange}
+                    className="catalog-details-edit-input"
+                    min={0}
+                    required
+                  />
+                  <button type="submit" id="vendor-account-details-save">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="vendor-account-details-edit"
+                    onClick={() => handleCancel("isQuantityEditing")}
+                  >
+                    Cancel
+                  </button>
+                </form>
               )}
             </div>
             <div className="catalog-details-edits-input-group">
               <h4>
                 Product Details
-                <button
-                  id="catalog-details-edit-button"
-                  onClick={() => handleEdit("isDescriptionEditing")}
-                >
-                  <FileEditIcon />
-                </button>
+                {!isEditing.isDescriptionEditing && (
+                  <button
+                    type="button"
+                    id="catalog-details-edit-button"
+                    onClick={() => handleEdit("isDescriptionEditing")}
+                  >
+                    Edit
+                  </button>
+                )}
               </h4>
               {!isEditing.isDescriptionEditing && <p>{product?.description}</p>}
               {isEditing.isDescriptionEditing && (
-                <textarea
-                  type="textarea"
-                  id="description"
-                  defaultValue={product?.description}
-                  onChange={handleChange}
-                  rows={5}
-                  className="catalog-details-edit-input"
-                />
+                <form onSubmit={(e) => handleSave(e, ["description"])}>
+                  <textarea
+                    id="description"
+                    value={formData.description ?? ""}
+                    onChange={handleChange}
+                    rows={5}
+                    className="catalog-details-edit-input"
+                  />
+                  <button type="submit" id="vendor-account-details-save">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="vendor-account-details-edit"
+                    onClick={() => handleCancel("isDescriptionEditing")}
+                  >
+                    Cancel
+                  </button>
+                </form>
               )}
             </div>
             <div className="catalog-details-edits-input-group">
               <h4>
                 Brand
-                <button
-                  id="catalog-details-edit-button"
-                  onClick={() => handleEdit("isBrandEditing")}
-                >
-                  <FileEditIcon />
-                </button>
+                {!isEditing.isBrandEditing && (
+                  <button
+                    type="button"
+                    id="catalog-details-edit-button"
+                    onClick={() => handleEdit("isBrandEditing")}
+                  >
+                    Edit
+                  </button>
+                )}
               </h4>
               {!isEditing.isBrandEditing && <p>{product?.brand_name}</p>}
               {isEditing.isBrandEditing && (
-                <select
-                  id="brand"
-                  defaultValue={product?.brand_id}
-                  onChange={handleChange}
-                  className="catalog-details-edit-input"
-                >
-                  {brands.map((brand, index) => (
-                    <option key={index} value={brand.brandID}>
-                      {brand.brandName}
-                    </option>
-                  ))}
-                </select>
+                <form onSubmit={(e) => handleSave(e, ["brand"])}>
+                  <select
+                    id="brand"
+                    value={formData.brand ?? ""}
+                    onChange={handleChange}
+                    className="catalog-details-edit-input"
+                  >
+                    {brands.map((brand, index) => (
+                      <option key={index} value={brand.brandID}>
+                        {brand.brandName}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" id="vendor-account-details-save">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="vendor-account-details-edit"
+                    onClick={() => handleCancel("isBrandEditing")}
+                  >
+                    Cancel
+                  </button>
+                </form>
               )}
             </div>
             <div className="catalog-details-edits-input-group">
               <h4>
                 Category
-                <button
-                  id="catalog-details-edit-button"
-                  onClick={() => handleEdit("isCategoryEditing")}
-                >
-                  <FileEditIcon />
-                </button>
+                {!isEditing.isCategoryEditing && (
+                  <button
+                    type="button"
+                    id="catalog-details-edit-button"
+                    onClick={() => handleEdit("isCategoryEditing")}
+                  >
+                    Edit
+                  </button>
+                )}
               </h4>
               {!isEditing.isCategoryEditing && <p>{product?.category_name}</p>}
               {isEditing.isCategoryEditing && (
-                <select
-                  id="category"
-                  defaultValue={product?.category_id}
-                  onChange={handleChange}
-                  className="catalog-details-edit-input"
-                >
-                  {categories.map((category, index) => (
-                    <option key={index} value={category.categoryID}>
-                      {category.categoryName}
-                    </option>
-                  ))}
-                </select>
+                <form onSubmit={(e) => handleSave(e, ["category"])}>
+                  <select
+                    id="category"
+                    value={formData.category ?? ""}
+                    onChange={handleChange}
+                    className="catalog-details-edit-input"
+                  >
+                    {categories.map((category, index) => (
+                      <option key={index} value={category.categoryID}>
+                        {category.categoryName}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" id="vendor-account-details-save">
+                    Save
+                  </button>
+                  <button
+                    type="button"
+                    id="vendor-account-details-edit"
+                    onClick={() => handleCancel("isCategoryEditing")}
+                  >
+                    Cancel
+                  </button>
+                </form>
               )}
             </div>
           </div>

@@ -1,0 +1,235 @@
+.store-details-container,
+.store-details-container * {
+  /* border: 1px solid red; */
+}
+
+.store-details-container {
+  padding: 0 var(--desktop-padding);
+  margin: 32px auto;
+  max-width: var(--max-width);
+  display: flex;
+  flex-direction: column;
+  gap: 32px;
+}
+
+.store-details-container h3,
+.store-details-container h2 {
+  font-weight: 400;
+}
+
+.store-details-container button {
+  appearance: none;
+  background: none;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  border: none;
+}
+
+.store-details-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.store-details-content
+  > div:not(.store-details-header):not(.store-details-photos-section) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+#store-details-edit {
+  text-decoration: underline;
+  align-self: flex-start;
+}
+
+#store-details-edit:hover {
+  color: var(--primary-color);
+}
+
+.store-details-content > div {
+  border-bottom: 1px solid var(--primary-color-light);
+  padding: 32px 0;
+}
+
+.store-details-content > div:last-child {
+  border-bottom: none;
+}
+
+.store-details-content > div:first-child {
+  padding-top: 0;
+}
+
+.store-details-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+#store-details-save {
+  padding: 8px 32px;
+  background: var(--primary-color-darker);
+  color: white;
+  width: 100%;
+}
+
+#store-details-save:hover {
+  opacity: 0.9;
+}
+
+.store-details-content textarea {
+  width: 100%;
+  min-height: 120px;
+  padding: 8px;
+  border: 1px solid var(--primary-color-light);
+  resize: none;
+  outline: none;
+  font: inherit;
+}
+
+.store-details-content textarea:focus {
+  border-color: var(--primary-color);
+}
+
+/* Store Photos */
+
+.store-details-photos-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.store-details-photos {
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.store-details-image-container {
+  position: relative;
+  border: 1px solid var(--primary-color-lighter);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: hidden;
+  width: 30%;
+  aspect-ratio: 4/5;
+  flex-shrink: 0;
+}
+
+.store-details-image-container img {
+  object-fit: contain;
+  width: 100%;
+  height: 100%;
+  display: block;
+  transition: opacity 0.5s ease-in-out;
+}
+
+#store-details-edit-image-button {
+  position: absolute;
+  bottom: 8px;
+  right: 8px;
+  background-color: var(--primary-color-lighter);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+
+#store-details-edit-image-button * {
+  color: var(--primary-color-light);
+}
+
+.store-details-image-thumbnails {
+  display: flex;
+  gap: 16px;
+  justify-content: flex-start;
+  align-items: flex-start;
+  flex-wrap: wrap;
+}
+
+.store-details-image-thumbnails img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+}
+
+@media (max-width: 768px) {
+  .store-details-photos {
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .store-details-image-container {
+    width: 60%;
+  }
+
+  .store-details-image-thumbnails {
+    justify-content: center;
+  }
+}
+
+.store-details-image-thumbnail-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 1px solid var(--primary-color-lighter);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  cursor: pointer;
+}
+
+#store-details-delete-image-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--primary-color-lighter);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  color: white;
+  z-index: 1;
+  visibility: hidden;
+}
+
+.store-details-image-thumbnail-container:hover
+  #store-details-delete-image-button {
+  visibility: visible;
+}
+
+#store-details-add-image-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+#store-details-add-image-button * {
+  color: var(--primary-color-light);
+}
+
+.store-details-image-thumbnail-container:has(#store-details-add-image-button) {
+  border: 2px dashed var(--primary-color-lighter);
+}
+
+.store-details-image-thumbnail-container:has(
+    #store-details-add-image-button
+  ):hover {
+  border: 2px dashed var(--primary-color-light);
+  background-color: var(--primary-color-lighter);
+}

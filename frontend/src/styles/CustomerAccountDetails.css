@@ -1,14 +1,20 @@
-.customer-account-details-container, .customer-account-details-container * {
-    border: 1px solid red;
+.customer-account-details-container,
+.customer-account-details-container * {
+  /* border: 1px solid red; */
 }
 
 .customer-account-details-container {
-    padding: 0 var(--desktop-padding);
+  padding: 0 var(--desktop-padding);
   margin: 32px auto;
   max-width: var(--max-width);
   display: flex;
   flex-direction: column;
   gap: 32px;
+}
+
+.customer-account-details-container h3,
+.customer-account-details-container h2 {
+  font-weight: 400;
 }
 
 .customer-account-details-container button {
@@ -21,5 +27,62 @@
   display: flex;
   justify-content: center;
   align-items: center;
+  border: none;
 }
 
+.customer-account-details-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.customer-account-details-avatar {
+  width: 60px;
+  height: 60px;
+  object-fit: cover;
+  border-radius: 50%;
+}
+.customer-account-details-content > div:not(.customer-account-details-header) {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+#customer-account-details-edit {
+  text-decoration: underline;
+  align-self: flex-start;
+}
+
+#customer-account-details-edit:hover {
+  color: var(--primary-color);
+}
+.customer-account-details-content > div {
+  border-bottom: 1px solid var(--primary-color-light);
+  padding: 32px 0;
+}
+
+.customer-account-details-content > div:last-child {
+  border-bottom: none;
+}
+
+.customer-account-details-content > div:first-child {
+  padding-top: 0;
+}
+
+#customer-account-details-save {
+  padding: 8px 32px;
+  background: var(--primary-color-darker);
+  color: white;
+  width: 100%;
+}
+
+#customer-account-details-save:hover {
+  opacity: 0.9;
+}
+
+.customer-account-details-content form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  max-width: 500px;
+}

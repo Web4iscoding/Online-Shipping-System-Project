@@ -1,0 +1,105 @@
+/* ===== Sortable Image Thumbnails (DnD) ===== */
+
+.sortable-image-thumbnails {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.sortable-thumbnail-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 1px solid var(--primary-color-lighter);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+  cursor: grab;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    opacity 0.2s ease;
+  user-select: none;
+}
+
+.sortable-thumbnail-container:active {
+  cursor: grabbing;
+}
+
+.sortable-thumbnail-container img {
+  object-fit: cover;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+/* Dragging state */
+.sortable-thumbnail-dragging {
+  opacity: 0.5;
+  transform: scale(1.08);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.18);
+  z-index: 10;
+}
+
+/* Selected state */
+.sortable-thumbnail-selected {
+  border: 2px solid var(--primary-color);
+}
+
+/* Delete button on thumbnail — doubled class for specificity over parent resets */
+.sortable-thumbnail-container .sortable-thumbnail-delete-button {
+  position: absolute;
+  top: -10px;
+  right: -10px;
+  background-color: var(--primary-color-lighter);
+  border-radius: 50%;
+  width: 20px;
+  height: 20px;
+  color: white;
+  z-index: 1;
+  visibility: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  appearance: none;
+  border: none;
+  cursor: pointer;
+  padding: 0;
+}
+
+.sortable-thumbnail-container:hover .sortable-thumbnail-delete-button {
+  visibility: visible;
+}
+
+/* Add image button container */
+.sortable-thumbnail-add-container {
+  position: relative;
+  width: 80px;
+  height: 80px;
+  border: 2px dashed var(--primary-color-lighter);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  overflow: visible;
+}
+
+.sortable-thumbnail-add-container:hover {
+  border-color: var(--primary-color-light);
+  background-color: var(--primary-color-lighter);
+}
+
+.sortable-thumbnail-add-container label {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  height: 100%;
+  cursor: pointer;
+}
+
+.sortable-thumbnail-add-container label * {
+  color: var(--primary-color-light);
+}

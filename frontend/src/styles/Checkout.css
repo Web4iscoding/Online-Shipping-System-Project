@@ -56,3 +56,7 @@
   font: inherit;
   font-size: 14px;
 }
+
+#checkout-button:hover {
+  opacity: 0.9;
+}

@@ -1,0 +1,136 @@
+.store-container,
+.store-container * {
+  /* border: 1px solid red; */
+}
+
+.store-container {
+  max-width: var(--max-width);
+  margin: 32px auto;
+  padding: 0 var(--desktop-padding);
+  display: flex;
+  flex-direction: column;
+}
+
+.store-header {
+  display: flex;
+  align-items: center;
+  gap: 64px;
+  padding: 16px 16px 32px 16px;
+  border-bottom: 1px solid var(--primary-color-light);
+}
+
+.store-header-left {
+  flex: 1.1;
+}
+
+.store-header-right {
+  flex: 0.9;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-self: stretch;
+  padding: 32px 0;
+}
+
+.store-header-right--centered {
+  flex: unset;
+  align-self: center;
+  width: 100%;
+  max-width: 480px;
+  margin: 0 auto;
+}
+
+.store-header-right--centered .store-profile {
+  justify-content: center;
+}
+
+.store-header-right--centered .store-description {
+  text-align: center;
+}
+
+.store-header-right > * {
+  flex: 1;
+}
+
+.store-header-image-viewport {
+  overflow: hidden;
+  width: 100%;
+}
+
+.store-header-image-track {
+  display: flex;
+  transition: transform 0.4s ease;
+}
+
+.store-header-image {
+  min-width: 100%;
+  width: 100%;
+  height: 300px;
+  object-fit: cover;
+}
+
+.store-avatar {
+  width: 90px;
+  height: 90px;
+  object-fit: cover;
+  border-radius: 50%;
+  border: 1px solid var(--primary-color-lighter);
+}
+
+.store-details {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.store-page-store-number-of-products {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.store-rating {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 2px;
+}
+
+.store-rating-stars {
+  display: flex;
+  align-items: center;
+}
+
+.store-rating-star {
+  display: flex;
+  align-items: center;
+}
+
+.store-rating-count {
+  font-size: 13px;
+  color: var(--primary-color);
+}
+
+.store-profile {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.store-products-section {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 32px 16px 0 16px;
+}
+
+.store-product-list {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  grid-auto-rows: repeat(2, auto);
+  gap: 16px;
+}
+
+.store-products-section h2 {
+  font-weight: 400;
+}

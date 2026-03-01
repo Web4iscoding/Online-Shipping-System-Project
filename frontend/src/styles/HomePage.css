@@ -182,11 +182,16 @@
 }
 
 .newest-items-list {
+  position: relative;
+  overflow: hidden;
+  width: 100%;
+}
+
+.newest-items-track {
   display: flex;
   flex-wrap: nowrap;
-  overflow-x: hidden;
   gap: 16px;
-  width: 100%;
+  transition: transform 0.35s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .product-card {
@@ -217,29 +222,35 @@
   cursor: pointer;
 }
 
-.next-button {
+.newest-prev-button,
+.newest-next-button {
   position: absolute;
-  display: flex;
-  justify-content: center;
-  border: none;
-  align-items: center;
-  height: 50px;
-  width: 50px;
-  background-color: var(--primary-color-lighter);
+  top: 40%;
+  transform: translateY(-50%);
   box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
+  background-color: var(--primary-color-lighter);
   opacity: 60%;
-  right: calc(32px - 25px);
-  top: calc(50% - 25px - 32px);
-  z-index: 1;
+  border: none;
+  padding: 8px;
   cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1;
+  transition: opacity 0.15s;
 }
 
-.next-button:hover {
+.newest-prev-button:hover,
+.newest-next-button:hover {
   opacity: 90%;
 }
 
-.next-button:active {
-  transform: translateY(1px);
+.newest-prev-button {
+  left: 8px;
+}
+
+.newest-next-button {
+  right: 8px;
 }
 
 @keyframes scroll-left {

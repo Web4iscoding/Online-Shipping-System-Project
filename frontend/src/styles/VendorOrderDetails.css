@@ -160,3 +160,7 @@
   color: white;
   border: none;
 }
+
+#vendor-order-confirm-shipment-button:hover {
+  opacity: 0.9;
+}

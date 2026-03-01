@@ -80,9 +80,6 @@ const OrderCard = ({ order, panelId, expanded, onChange }) => {
         >
           View Details
         </button>
-        <div className="order-card-button-group">
-          <button className="order-card-action-button">Cancel Order</button>
-        </div>
       </AccordionDetails>
     </Accordion>
   );

@@ -9,6 +9,7 @@ import {
   Route,
   Navigate,
   Link,
+  useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext";
 import Navigation from "./components/Navigation";
@@ -24,7 +25,7 @@ import { wishlist, vendor } from "./api";
 import ProductList from "./components/products/ProductList";
 import ProductDetail from "./components/products/ProductDetail";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { apiCall } from "./api";
 import RegisterSelection from "./components/auth/RegisterSelection";
 import MyOrders from "./components/auth/customer/MyOrders";
@@ -32,6 +33,7 @@ import CustomerAccountDetails from "./components/auth/customer/CustomerAccountDe
 import Catalog from "./components/auth/vendor/Catalog";
 import Orders from "./components/auth/vendor/Orders";
 import Discounts from "./components/auth/vendor/Discounts";
+import CreateDiscount from "./components/auth/vendor/CreateDiscount";
 import ShippedOrders from "./components/auth/vendor/ShippedOrders";
 import StoreDetails from "./components/auth/vendor/StoreDetails";
 import HomePage from "./components/HomePage";
@@ -42,13 +44,33 @@ import CatalogDetails from "./components/auth/vendor/CatalogDetails";
 import VendorOrderDetails from "./components/auth/vendor/VendorOrderDetails";
 import Checkout from "./components/cart/Checkout";
 import CustomerOrderDetails from "./components/auth/customer/CustomerOrderDetails";
+import VendorAccountDetails from "./components/auth/vendor/VendorAccountDetails";
+import ScrollToTop from "./components/common/ScrollToTop";
+import SearchModal from "./components/modals/SearchModal";
+import ModalBackdrop from "./components/common/ModalBackdrop";
+import Store from "./components/products/Store";
+import WriteReview from "./components/auth/customer/WriteReview";
+import AllReviews from "./components/products/AllReviews";
+import Wishlist from "./components/auth/customer/Wishlist";
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
+  const [showSearchModal, setShowSearchModal] = useState(false);
+  const { pathname } = useLocation();
+
+  useEffect(() => {
+    setShowSearchModal(false);
+  }, [pathname]);
 
   return (
     <div className="app">
-      <Navigation />
+      <Navigation setShowSearchModal={setShowSearchModal} />
+      {showSearchModal && (
+        <SearchModal onClose={() => setShowSearchModal(false)} />
+      )}
+      {showSearchModal && (
+        <ModalBackdrop onClose={() => setShowSearchModal(false)} />
+      )}
 
       <div className="main-content">
         <Routes>
@@ -60,10 +82,18 @@ const AppContent = () => {
           <Route path="/logout" element={<Logout />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/my-orders" element={<MyOrders />} />
-          <Route path="/customer/account-details" element={<CustomerAccountDetails />} />
+          <Route
+            path="/customer/account-details"
+            element={<CustomerAccountDetails />}
+          />
+          <Route
+            path="/vendor/account-details"
+            element={<VendorAccountDetails />}
+          />
           <Route path="/catalog" element={<Catalog />} />
           <Route path="/orders" element={<Orders />} />
           <Route path="/discounts" element={<Discounts />} />
+          <Route path="/create-discount/:productId" element={<CreateDiscount />} />
           <Route path="/shipped-orders" element={<ShippedOrders />} />
           <Route path="/store-details" element={<StoreDetails />} />
           <Route path="/product-list/:filter" element={<ProductList />} />
@@ -81,6 +111,10 @@ const AppContent = () => {
             path="/customer/order-details/:id"
             element={<CustomerOrderDetails />}
           />
+          <Route path="/store/:id" element={<Store />} />
+          <Route path="/product/:id/reviews" element={<AllReviews />} />
+          <Route path="/review/:productId/:orderItemId" element={<WriteReview />} />
+          <Route path="/wishlist" element={<Wishlist />} />
         </Routes>
       </div>
       <Footer />
@@ -91,6 +125,7 @@ const AppContent = () => {
 function App() {
   return (
     <Router>
+      <ScrollToTop />
       <AuthProvider>
         <AppContent />
       </AuthProvider>

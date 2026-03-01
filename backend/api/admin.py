@@ -2,7 +2,7 @@ from django.contrib import admin
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia,
     Category, Brand, CartItem, Order, OrderItem,
-    WishlistItem, Promotion, Review
+    WishlistItem, Promotion, Review, ReviewMedia, Notification
 )
 
 # User Models Admin
@@ -131,14 +131,33 @@ class PromotionAdmin(admin.ModelAdmin):
 
 
 # Review Admin
+class ReviewMediaInline(admin.TabularInline):
+    model = ReviewMedia
+    extra = 1
+
 @admin.register(Review)
 class ReviewAdmin(admin.ModelAdmin):
     list_display = ['reviewID', 'orderItemID', 'rating', 'createdDate']
     list_filter = ['rating', 'createdDate']
     search_fields = ['orderItemID__productName', 'comment']
     readonly_fields = ['createdDate']
+    inlines = [ReviewMediaInline]
     fieldsets = (
         ('Order Info', {'fields': ('orderItemID',)}),
         ('Review Content', {'fields': ('comment', 'rating')}),
         ('Dates', {'fields': ('createdDate',)}),
     )
+
+@admin.register(ReviewMedia)
+class ReviewMediaAdmin(admin.ModelAdmin):
+    list_display = ['reviewMediaID', 'reviewID', 'mediaType', 'sortedOrder']
+    list_filter = ['mediaType']
+    ordering = ['reviewID', 'sortedOrder']
+
+
+@admin.register(Notification)
+class NotificationAdmin(admin.ModelAdmin):
+    list_display = ['notificationID', 'user', 'notificationType', 'title', 'isRead', 'createdTime']
+    list_filter = ['notificationType', 'isRead', 'createdTime']
+    search_fields = ['user__username', 'title', 'message']
+    readonly_fields = ['createdTime']

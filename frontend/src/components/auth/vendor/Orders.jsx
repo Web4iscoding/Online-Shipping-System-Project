@@ -222,8 +222,13 @@ const Orders = () => {
           onClose={() => setShowOrderGeneralActionModal(false)}
           onConfirm={async () => {
             if (orderGeneralActionType === "Cancelled") {
-              const currentOrder = orders.find((o) => o.orderID === currentOrderId);
-              await handleUpdateStatus("Cancelled", currentOrder?.refundReason || "Refund approved by vendor");
+              const currentOrder = orders.find(
+                (o) => o.orderID === currentOrderId,
+              );
+              await handleUpdateStatus(
+                "Cancelled",
+                currentOrder?.refundReason || "Refund approved by vendor",
+              );
               await handleDismissRefund();
             } else {
               await handleUpdateStatus(orderGeneralActionType);

@@ -6,7 +6,7 @@ from rest_framework.authtoken.models import Token
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia,
     Category, Brand, CartItem, Order, OrderItem,
-    WishlistItem, Promotion, Review
+    WishlistItem, Promotion, Review, ReviewMedia, Notification
 )
 
 
@@ -103,6 +103,26 @@ class VendorRegisterSerializer(serializers.Serializer):
         return value
 
 
+class ChangePasswordSerializer(serializers.Serializer):
+
+    current_password = serializers.CharField(write_only=True)
+    new_password = serializers.CharField(write_only=True, min_length=6)
+    confirm_password = serializers.CharField(write_only=True, min_length=6)
+
+    def validate_current_password(self, value):
+        user = self.context['request'].user
+        if not user.check_password(value):
+            raise serializers.ValidationError("Current password is incorrect.")
+        return value
+
+    def validate(self, data):
+        if data['new_password'] != data['confirm_password']:
+            raise serializers.ValidationError({"confirm_password": "New passwords do not match."})
+        if data['new_password'] == data['current_password']:
+            raise serializers.ValidationError({"new_password": "New password must be different from current password."})
+        return data
+
+
 class LoginSerializer(serializers.Serializer):
 
     email = serializers.EmailField()
@@ -149,6 +169,62 @@ class CustomerSerializer(serializers.ModelSerializer):
         }
 
 
+class CustomerUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating customer profile fields."""
+    username = serializers.CharField(max_length=150, required=False)
+    email = serializers.EmailField(required=False)
+    current_password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Customer
+        fields = ['firstName', 'lastName', 'phoneNo', 'profileImage',
+                  'shippingAddress1', 'shippingAddress2', 'shippingAddress3',
+                  'username', 'email', 'current_password']
+
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if User.objects.filter(username=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Username already taken.")
+        return value
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if User.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Email already taken.")
+        return value
+
+    def validate(self, data):
+        if 'email' in data:
+            password = data.get('current_password')
+            if not password:
+                raise serializers.ValidationError(
+                    {'current_password': 'Your current password is required to change your email.'}
+                )
+            if not self.context['request'].user.check_password(password):
+                raise serializers.ValidationError(
+                    {'current_password': 'Current password is incorrect.'}
+                )
+        return data
+
+    def update(self, instance, validated_data):
+        validated_data.pop('current_password', None)
+        # Extract and apply User-level fields
+        username = validated_data.pop('username', None)
+        email = validated_data.pop('email', None)
+        if username is not None:
+            instance.user.username = username
+        if email is not None:
+            instance.user.email = email
+        if username is not None or email is not None:
+            instance.user.save()
+
+        # Apply remaining Customer fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
+
+
 class VendorSerializer(serializers.ModelSerializer):
 
     user = serializers.SerializerMethodField()
@@ -164,6 +240,61 @@ class VendorSerializer(serializers.ModelSerializer):
             'username': obj.user.username,
             'email': obj.user.email
         }
+
+
+class VendorUpdateSerializer(serializers.ModelSerializer):
+    """Serializer for updating vendor profile fields."""
+    username = serializers.CharField(max_length=150, required=False)
+    email = serializers.EmailField(required=False)
+    current_password = serializers.CharField(write_only=True, required=False)
+
+    class Meta:
+        model = Vendor
+        fields = ['firstName', 'lastName', 'phoneNo', 'profileImage',
+                  'username', 'email', 'current_password']
+
+    def validate_username(self, value):
+        user = self.context['request'].user
+        if User.objects.filter(username=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Username already taken.")
+        return value
+
+    def validate_email(self, value):
+        user = self.context['request'].user
+        if User.objects.filter(email=value).exclude(pk=user.pk).exists():
+            raise serializers.ValidationError("Email already taken.")
+        return value
+
+    def validate(self, data):
+        if 'email' in data:
+            password = data.get('current_password')
+            if not password:
+                raise serializers.ValidationError(
+                    {'current_password': 'Your current password is required to change your email.'}
+                )
+            if not self.context['request'].user.check_password(password):
+                raise serializers.ValidationError(
+                    {'current_password': 'Current password is incorrect.'}
+                )
+        return data
+
+    def update(self, instance, validated_data):
+        validated_data.pop('current_password', None)
+        # Extract and apply User-level fields
+        username = validated_data.pop('username', None)
+        email = validated_data.pop('email', None)
+        if username is not None:
+            instance.user.username = username
+        if email is not None:
+            instance.user.email = email
+        if username is not None or email is not None:
+            instance.user.save()
+
+        # Apply remaining Vendor fields
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        return instance
 
 
 
@@ -201,11 +332,32 @@ class StoreSerializer(serializers.ModelSerializer):
     photos = StorePhotoSerializer(many=True, read_only=True)
     vendor_username = serializers.CharField(source='vendorID.user.username', read_only=True)
     vendor_profileImage = serializers.CharField(source='vendorID.profileImage', read_only=True)
+    total_products = serializers.SerializerMethodField()
+    average_rating = serializers.SerializerMethodField()
+    total_reviews = serializers.SerializerMethodField()
 
     class Meta:
         model = Store
-        fields = ['storeID', 'vendor_username', 'vendor_profileImage', 'storeName', 'description', 'photos', 'createdTime']
+        fields = ['storeID', 'vendor_username', 'vendor_profileImage', 'storeName', 'description', 'photos', 'total_products', 'average_rating', 'total_reviews', 'createdTime']
         read_only_fields = ['storeID', 'createdTime']
+
+    def get_total_products(self, obj):
+        return obj.products.filter(isHidden=False, availability=True).count()
+
+    def get_average_rating(self, obj):
+        from django.db.models import Avg
+        result = Review.objects.filter(
+            orderItemID__productID__storeID=obj
+        ).aggregate(avg=Avg('rating'))
+        avg = result['avg']
+        if avg is not None:
+            return round(float(avg) * 2) / 2  # round to nearest 0.5
+        return None
+
+    def get_total_reviews(self, obj):
+        return Review.objects.filter(
+            orderItemID__productID__storeID=obj
+        ).count()
 
 
 
@@ -375,16 +527,50 @@ class WishlistItemSerializer(serializers.ModelSerializer):
 
 
 
-# Review Serializer
+# Review Serializers
+
+class ReviewMediaSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = ReviewMedia
+        fields = ['reviewMediaID', 'mediaURL', 'mediaType', 'sortedOrder']
+        read_only_fields = ['reviewMediaID']
+
 
 class ReviewSerializer(serializers.ModelSerializer):
 
     product_name = serializers.CharField(source='orderItemID.productName', read_only=True)
+    media = ReviewMediaSerializer(many=True, read_only=True)
 
     class Meta:
         model = Review
-        fields = ['reviewID', 'product_name', 'comment', 'rating', 'createdDate']
-        read_only_fields = ['reviewID', 'createdDate']
+        fields = ['reviewID', 'product_name', 'comment', 'rating', 'createdDate', 'media']
+
+
+class ProductReviewSerializer(serializers.ModelSerializer):
+    """Serializer for displaying reviews on a product detail page (includes customer name)."""
+
+    customer_name = serializers.SerializerMethodField()
+    customer_username = serializers.SerializerMethodField()
+    customer_avatar = serializers.SerializerMethodField()
+    media = ReviewMediaSerializer(many=True, read_only=True)
+
+    class Meta:
+        model = Review
+        fields = ['reviewID', 'customer_name', 'customer_username', 'customer_avatar', 'comment', 'rating', 'createdDate', 'media']
+
+    def get_customer_name(self, obj):
+        customer = obj.orderItemID.orderID.customerID
+        return f"{customer.firstName} {customer.lastName}"
+
+    def get_customer_username(self, obj):
+        return obj.orderItemID.orderID.customerID.user.username
+
+    def get_customer_avatar(self, obj):
+        customer = obj.orderItemID.orderID.customerID
+        if customer.profileImage:
+            return customer.profileImage.url
+        return None
 
 
 
@@ -393,15 +579,29 @@ class ReviewSerializer(serializers.ModelSerializer):
 class PromotionSerializer(serializers.ModelSerializer):
     
     product_name = serializers.CharField(source='productID.productName', read_only=True)
-    is_active = serializers.SerializerMethodField()
+    product_price = serializers.DecimalField(source='productID.price', max_digits=10, decimal_places=2, read_only=True)
+    product_image = serializers.SerializerMethodField()
+    is_currently_active = serializers.SerializerMethodField()
+    discounted_price = serializers.SerializerMethodField()
 
     class Meta:
         model = Promotion
-        fields = ['promotionID', 'product_name', 'discountRate', 'startDate', 'endDate', 'status', 'is_active']
+        fields = [
+            'promotionID', 'productID', 'product_name', 'product_price', 'product_image',
+            'discountRate', 'startDate', 'endDate', 'status', 'is_currently_active', 'discounted_price'
+        ]
         read_only_fields = ['promotionID']
 
-    def get_is_active(self, obj):
+    def get_product_image(self, obj):
+        media = obj.productID.media.filter(isPrimary=True).first()
+        return media.mediaURL.url if media else None
+
+    def get_is_currently_active(self, obj):
         return obj.is_active()
+
+    def get_discounted_price(self, obj):
+        discount = obj.productID.price * obj.discountRate / 100
+        return float(obj.productID.price - discount)
 
 
 
@@ -450,5 +650,32 @@ class VendorOrderSerializer(serializers.ModelSerializer):
         else:
             vendor_items = obj.items.all()
         return VendorOrderItemSerializer(vendor_items, many=True).data
+
+
+# Notification Serializer
+
+class NotificationSerializer(serializers.ModelSerializer):
+    """Serializer for notifications."""
+    product_name = serializers.CharField(source='productID.productName', read_only=True, default=None)
+    product_image = serializers.SerializerMethodField()
+    order_status = serializers.CharField(source='orderID.status', read_only=True, default=None)
+
+    class Meta:
+        model = Notification
+        fields = [
+            'notificationID', 'notificationType', 'title', 'message', 'link',
+            'isRead', 'createdTime', 'orderID', 'productID',
+            'product_name', 'product_image', 'order_status'
+        ]
+        read_only_fields = ['notificationID', 'createdTime']
+
+    def get_product_image(self, obj):
+        if obj.productID:
+            primary = obj.productID.media.filter(isPrimary=True).first()
+            if not primary:
+                primary = obj.productID.media.first()
+            if primary:
+                return primary.mediaURL.url
+        return None
 
 
