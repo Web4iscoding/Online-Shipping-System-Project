@@ -37,6 +37,20 @@ const CartItem = ({
         <TrashCanIcon />
       </button>
 
+      
+
+      <h2 className="cart-item-title">{productName}</h2>
+      <div className="cart-item-info">
+        <img src={productImage} alt={productName} />
+        {hasDiscount ? (
+          <div className="cart-item-price-group">
+            <h3>${Number(discountedPrice).toFixed(2)}</h3>
+            <span className="cart-item-price-original">${Number(productPrice).toFixed(2)}</span>
+          </div>
+        ) : (
+          <h3>${productPrice}</h3>
+        )}
+      </div>
       <div className="cart-item-quantity-button-group">
         <button
           onClick={() => {
@@ -64,19 +78,6 @@ const CartItem = ({
           <PlusIcon />
         </button>
       </div>
-
-      <h2 className="cart-item-title">{productName}</h2>
-      <div className="cart-item-info">
-        <img src={productImage} alt={productName} />
-        {hasDiscount ? (
-          <div className="cart-item-price-group">
-            <h3>${Number(discountedPrice).toFixed(2)}</h3>
-            <span className="cart-item-price-original">${Number(productPrice).toFixed(2)}</span>
-          </div>
-        ) : (
-          <h3>${productPrice}</h3>
-        )}
-      </div>
     </div>
   );
 };
@@ -92,6 +93,7 @@ const Cart = () => {
     async function performFetch() {
       const cartData = await cartAPI.list();
       console.log(cartData.items);
+      console.log(cartData);
       setCartItems(cartData.items);
       setTotalPrice(cartData.total);
       setNumberOfItems(cartData.item_count);
@@ -124,6 +126,7 @@ const Cart = () => {
     setCartItems(cartData.items);
     setTotalPrice(cartData.total);
     setNumberOfItems(cartData.item_count);
+    window.dispatchEvent(new Event('cart-updated'));
   };
 
   const handleUpdateQuantity = async (productID, quantity) => {
@@ -137,6 +140,7 @@ const Cart = () => {
       setCartItems(cartData.items);
       setTotalPrice(cartData.total);
       setNumberOfItems(cartData.item_count);
+      window.dispatchEvent(new Event('cart-updated'));
     }
   };
 
@@ -180,7 +184,7 @@ const Cart = () => {
       {numberOfItems > 0 && (
         <div className="cart-total-container">
           <p className="cart-total-title">Total</p>
-          <p className="cart-total">${totalPrice}</p>
+          <p className="cart-total">${Number(totalPrice).toFixed(2)}</p>
         </div>
       )}
       {numberOfItems === 0 && (

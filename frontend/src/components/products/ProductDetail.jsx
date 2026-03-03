@@ -20,11 +20,13 @@ import { products as productAPI, cart as cartAPI, reviews as reviewsAPI, wishlis
 import blank_pfp from "../../assets/blank_pfp.png";
 import { useAuth } from "../../AuthContext";
 import ModalBackdrop from "../../components/common/ModalBackdrop";
+import useSwipe from "../../hooks/useSwipe";
 
 const ProductDetail = () => {
   const [product, setProduct] = useState({});
   const [productPictures, setProductPictures] = useState([]);
   const [currentPictureIndex, setCurrentPictureIndex] = useState(0);
+  const swipe = useSwipe(currentPictureIndex, setCurrentPictureIndex, productPictures.length || 1);
   const [quantity, setQuantity] = useState(1);
   const [storeProductCount, setStoreProductCount] = useState(null);
   const [hasPurchased, setHasPurchased] = useState(false);
@@ -92,6 +94,7 @@ const ProductDetail = () => {
 
   const handleAddToCart = async () => {
     await cartAPI.addItem(product.productID, quantity);
+    window.dispatchEvent(new Event('cart-updated'));
     navigate("/cart");
   };
 
@@ -143,11 +146,17 @@ const ProductDetail = () => {
           >
             <RightArrowIcon />
           </button>
-          <div className="product-detail-image-viewport">
+          <div
+            className="product-detail-image-viewport"
+            onTouchStart={swipe.onTouchStart}
+            onTouchMove={swipe.onTouchMove}
+            onTouchEnd={swipe.onTouchEnd}
+          >
             <div
               className="product-detail-image-track"
               style={{
-                transform: `translateX(-${currentPictureIndex * 100}%)`,
+                transform: `translateX(calc(-${currentPictureIndex * 100}% + ${swipe.dragOffset}px))`,
+                transition: swipe.dragOffset ? 'none' : undefined,
               }}
             >
               {(product?.media?.length

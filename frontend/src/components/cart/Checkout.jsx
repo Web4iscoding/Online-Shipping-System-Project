@@ -54,9 +54,7 @@ const Checkout = () => {
 
     // If multiple orders were created (items from different vendors)
     if (response.orders && response.orders.length > 0) {
-      // Navigate to the first order's page
-      // Alternatively, you could navigate to a summary page showing all orders
-      navigate("/my-orders/");
+      navigate("/purchase-complete");
     }
   };
 

@@ -24,6 +24,7 @@ import {
 import SuccessWindow from "../../windows/SuccessWindow";
 import SortableImageThumbnails from "../../common/SortableImageThumbnails";
 import noImage from "../../../assets/no_image_available.jpg";
+import { formatDate } from "../../../utils/formatDate";
 
 const CatalogDetails = () => {
   const { id } = useParams();
@@ -173,8 +174,8 @@ const CatalogDetails = () => {
               Product ID: #{product?.productID}
             </h2>
             <div className="catalog-details-product-dates">
-              <p>Created: {product?.createdTime}</p>
-              <p>Last Updated: {product?.updatedTime}</p>
+              <p>Created: {formatDate(product?.createdTime)}</p>
+              <p>Last Updated: {formatDate(product?.updatedTime)}</p>
             </div>
           </div>
           <div className="catalog-details-header-button-group">
@@ -433,6 +434,7 @@ const CatalogDetails = () => {
                     onChange={handleChange}
                     className="catalog-details-edit-input"
                     min={0}
+                    step="0.01"
                     required
                   />
                   <button type="submit" id="vendor-account-details-save">

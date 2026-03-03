@@ -8,6 +8,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import noImage from "../../../assets/no_image_available.jpg";
+import { formatDate } from "../../../utils/formatDate";
 
 const OrderItem = ({ orderItem }) => {
   return (
@@ -16,7 +17,7 @@ const OrderItem = ({ orderItem }) => {
         <img
           className="order-item-thumbnail"
           src={
-            `${API_BASE}/${orderItem.product_details?.primary_image}` || noImage
+            orderItem.product_details?.primary_image ? `${API_BASE}/${orderItem.product_details?.primary_image}` : noImage
           }
         ></img>
         <div className="order-item-details">
@@ -53,7 +54,7 @@ const OrderCard = ({ order, panelId, expanded, onChange }) => {
               Order{" "}
               <span className="order-card-order-id">#{order?.orderID}</span>
             </h2>
-            <p className="order-card-date">{order?.orderDate}</p>
+            <p className="order-card-date">{formatDate(order?.orderDate)}</p>
           </div>
           <div className={`order-card-status ${order?.status?.toLowerCase()}`}>
             {order?.status}

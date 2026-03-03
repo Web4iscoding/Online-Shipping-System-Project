@@ -6,7 +6,14 @@
 import { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../AuthContext";
-import { API_BASE, notifications as notificationsAPI, products as productsAPI } from "../api";
+import {
+  API_BASE,
+  notifications as notificationsAPI,
+  products as productsAPI,
+  brands as brandsAPI,
+  categories as categoriesAPI,
+  cart as cartAPI,
+} from "../api";
 import "../styles/Navigation.css";
 import {
   BellIcon,
@@ -16,7 +23,11 @@ import {
   CartIcon,
   MenuIcon,
   CloseIcon,
+  MenuDownIcon,
 } from "../assets/icons";
+import Accordion from "@mui/material/Accordion";
+import AccordionSummary from "@mui/material/AccordionSummary";
+import AccordionDetails from "@mui/material/AccordionDetails";
 import blank_pfp from "../assets/blank_pfp.png";
 import noImage from "../assets/no_image_available.jpg";
 import Notifications from "./modals/Notifications";
@@ -29,19 +40,60 @@ export const Navigation = ({ setShowSearchModal }) => {
   const [showNotifications, setShowNotifications] = useState(false);
   const [showMobileMenu, setShowMobileMenu] = useState(false);
   const [unreadCount, setUnreadCount] = useState(0);
+  const [cartCount, setCartCount] = useState(0);
   const [mobileSearchQuery, setMobileSearchQuery] = useState("");
   const [mobileSearchResults, setMobileSearchResults] = useState([]);
+  const [activeDropdown, setActiveDropdown] = useState(null);
+  const [allCategories, setAllCategories] = useState([]);
+  const [allBrands, setAllBrands] = useState([]);
+  const [mobileCategoryOpen, setMobileCategoryOpen] = useState(false);
+  const [mobileBrandOpen, setMobileBrandOpen] = useState(false);
+  const dropdownTimeout = useRef(null);
   const { pathname } = useLocation();
+
+  const MAX_DROPDOWN_ITEMS = 7;
+
+  // Sort: Others always last, rest alphabetical
+  const sortList = (items, nameKey) => {
+    return [...items].sort((a, b) => {
+      if (a[nameKey]?.toLowerCase() === "others") return 1;
+      if (b[nameKey]?.toLowerCase() === "others") return -1;
+      return a[nameKey].localeCompare(b[nameKey]);
+    });
+  };
+
+  // Fetch categories and brands once
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const [catRes, brandRes] = await Promise.all([
+          categoriesAPI.list(),
+          brandsAPI.list(),
+        ]);
+        setAllCategories(sortList(catRes.results || catRes, "categoryName"));
+        setAllBrands(sortList(brandRes.results || brandRes, "brandName"));
+      } catch {
+        // silent
+      }
+    };
+    fetchData();
+  }, []);
 
   // Close notification dropdown and mobile menu on route change
   useEffect(() => {
     setShowNotifications(false);
     setShowMobileMenu(false);
+    setActiveDropdown(null);
+    setMobileCategoryOpen(false);
+    setMobileBrandOpen(false);
   }, [pathname]);
 
   // Fetch unread count on mount and periodically
   useEffect(() => {
-    if (!isAuthenticated) return;
+    if (!isAuthenticated) {
+      setUnreadCount(0);
+      return;
+    }
     const fetchCount = async () => {
       try {
         const data = await notificationsAPI.unreadCount();
@@ -54,6 +106,29 @@ export const Navigation = ({ setShowSearchModal }) => {
     const interval = setInterval(fetchCount, 30000);
     return () => clearInterval(interval);
   }, [isAuthenticated]);
+
+  // Fetch cart item count on mount and periodically
+  useEffect(() => {
+    if (!isAuthenticated || isVendor) {
+      setCartCount(0);
+      return;
+    }
+    const fetchCartCount = async () => {
+      try {
+        const data = await cartAPI.list();
+        setCartCount(data.item_count || 0);
+      } catch (err) {
+        // silent
+      }
+    };
+    fetchCartCount();
+    const interval = setInterval(fetchCartCount, 30000);
+    window.addEventListener('cart-updated', fetchCartCount);
+    return () => {
+      clearInterval(interval);
+      window.removeEventListener('cart-updated', fetchCartCount);
+    };
+  }, [isAuthenticated, isVendor]);
 
   // Mobile inline search
   useEffect(() => {
@@ -125,13 +200,57 @@ export const Navigation = ({ setShowSearchModal }) => {
             <h1 className="site-logo">SenseLondon</h1>
           </Link>
           <div className="navbar-links">
-            <div>Categories</div>
-            <div>Brands</div>
-            <div>Sales</div>
-            <Link to="/product-list/in-stock" className="navbar-link">
+            <span
+              className="navbar-dropdown-trigger"
+              onMouseEnter={() => {
+                clearTimeout(dropdownTimeout.current);
+                setActiveDropdown(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimeout.current = setTimeout(() => setActiveDropdown(null), 150);
+              }}
+            >
+              Categories
+            </span>
+            <span
+              className="navbar-dropdown-trigger"
+              onMouseEnter={() => {
+                clearTimeout(dropdownTimeout.current);
+                setActiveDropdown(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimeout.current = setTimeout(() => setActiveDropdown(null), 150);
+              }}
+            >
+              Brands
+            </span>
+            <Link
+              to="/product-list/sale"
+              className="navbar-link navbar-dropdown-trigger"
+              onMouseEnter={() => {
+                clearTimeout(dropdownTimeout.current);
+                setActiveDropdown(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimeout.current = setTimeout(() => setActiveDropdown(null), 150);
+              }}
+            >
+              Sales
+            </Link>
+            <Link
+              to="/product-list/in-stock"
+              className="navbar-link navbar-dropdown-trigger"
+              onMouseEnter={() => {
+                clearTimeout(dropdownTimeout.current);
+                setActiveDropdown(true);
+              }}
+              onMouseLeave={() => {
+                dropdownTimeout.current = setTimeout(() => setActiveDropdown(null), 150);
+              }}
+            >
               In Stock
             </Link>
-            <div>Contact Us</div>
+            <Link to="/contact-us" className="navbar-link">Contact Us</Link>
           </div>
           <div className="navbar-user-menu">
             <button
@@ -170,10 +289,15 @@ export const Navigation = ({ setShowSearchModal }) => {
             )}
             {!isVendor && (
               <Link
-                style={{ display: "flex" }}
+                style={{ display: "flex", position: "relative" }}
                 to={isAuthenticated ? "/cart" : "/login"}
               >
                 <CartIcon size={0.8} />
+                {cartCount > 0 && (
+                  <span className="cart-badge">
+                    {cartCount > 99 ? "99+" : cartCount}
+                  </span>
+                )}
               </Link>
             )}
             <Link
@@ -197,6 +321,72 @@ export const Navigation = ({ setShowSearchModal }) => {
             </Link>
           </div>
         </div>
+        {/* Mega dropdown – rendered outside navbar-links to avoid transform stacking context */}
+        {activeDropdown && (
+          <div
+            className="navbar-mega-dropdown"
+            onMouseEnter={() => {
+              clearTimeout(dropdownTimeout.current);
+              setActiveDropdown(true);
+            }}
+            onMouseLeave={() => {
+              dropdownTimeout.current = setTimeout(() => setActiveDropdown(null), 150);
+            }}
+          >
+            <div className="mega-dropdown-list">
+              <h4 className="mega-dropdown-heading">Categories</h4>
+              {(allCategories.length > MAX_DROPDOWN_ITEMS
+                ? allCategories.slice(0, MAX_DROPDOWN_ITEMS)
+                : allCategories
+              ).map((cat) => (
+                <Link
+                  key={cat.categoryID}
+                  to={`/product-list/category/${encodeURIComponent(cat.categoryName)}`}
+                  className="mega-dropdown-item"
+                >
+                  {cat.categoryName}
+                </Link>
+              ))}
+              {allCategories.length > MAX_DROPDOWN_ITEMS && (
+                <Link to="/all-categories" className="mega-dropdown-see-all">
+                  See All...
+                </Link>
+              )}
+            </div>
+            <div className="mega-dropdown-list">
+              <h4 className="mega-dropdown-heading">Brands</h4>
+              {(allBrands.length > MAX_DROPDOWN_ITEMS
+                ? allBrands.slice(0, MAX_DROPDOWN_ITEMS)
+                : allBrands
+              ).map((brand) => (
+                <Link
+                  key={brand.brandID}
+                  to={`/product-list/brand/${encodeURIComponent(brand.brandName)}`}
+                  className="mega-dropdown-item"
+                >
+                  {brand.brandName}
+                </Link>
+              ))}
+              {allBrands.length > MAX_DROPDOWN_ITEMS && (
+                <Link to="/all-brands" className="mega-dropdown-see-all">
+                  See All...
+                </Link>
+              )}
+            </div>
+            <div className="mega-dropdown-images">
+              <button
+                className="mega-dropdown-image-placeholder"
+                onClick={() => navigate("/product-list/sale")}
+                aria-label="Sale"
+              />
+              <button
+                className="mega-dropdown-image-placeholder"
+                onClick={() => navigate("/product-list/in-stock")}
+                aria-label="In Stock"
+              />
+            </div>
+          </div>
+        )}
       </nav>
       {/* Mobile menu drawer */}
       <div className={`mobile-menu-backdrop${showMobileMenu ? " open" : ""}`} onClick={() => setShowMobileMenu(false)} />
@@ -205,7 +395,7 @@ export const Navigation = ({ setShowSearchModal }) => {
           <CloseIcon size={1} />
         </button>
         <div className="mobile-menu-search-wrapper">
-          <SearchIcon size={0.7} className="mobile-menu-search-icon" />
+          <SearchIcon size={1} className="mobile-menu-search-icon" />
           <input
             type="text"
             placeholder=""
@@ -221,7 +411,7 @@ export const Navigation = ({ setShowSearchModal }) => {
             }}
           />
         </div>
-        <hr className="mobile-menu-divider" />
+        {/* <hr className="mobile-menu-divider" /> */}
         {mobileSearchQuery.trim() && mobileSearchResults.length > 0 ? (
           <div className="mobile-menu-results">
             {mobileSearchResults.slice(0, 3).map((result) => (
@@ -253,18 +443,99 @@ export const Navigation = ({ setShowSearchModal }) => {
                 setShowMobileMenu(false);
               }}
             >
-              VIEW MORE
+              View All Results
             </button>
           </div>
         ) : (
           <nav className="mobile-menu-links">
-            <div onClick={() => setShowMobileMenu(false)}>Categories</div>
-            <div onClick={() => setShowMobileMenu(false)}>Brands</div>
-            <div onClick={() => setShowMobileMenu(false)}>Sale</div>
-            <Link to="/product-list/in-stock" className="navbar-link" onClick={() => setShowMobileMenu(false)}>
+            <Accordion
+              className="mobile-menu-accordion-card"
+              id="mobile-category-accordion"
+              expanded={mobileCategoryOpen}
+              onChange={() => setMobileCategoryOpen((prev) => !prev)}
+              disableGutters
+              elevation={0}
+              sx={{ "&:before": { display: "none" } }}
+            >
+              <AccordionSummary
+                expandIcon={<MenuDownIcon />}
+                sx={{ padding: 0, minHeight: 0, "& .MuiAccordionSummary-content": { margin: 0 } }}
+              >
+                <span className="mobile-menu-accordion-label">Categories</span>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: "12px 0 0 16px", display: "flex", flexDirection: "column", gap: "12px" }}>
+                {(allCategories.length > MAX_DROPDOWN_ITEMS
+                  ? allCategories.slice(0, MAX_DROPDOWN_ITEMS)
+                  : allCategories
+                ).map((cat) => (
+                  <Link
+                    key={cat.categoryID}
+                    to={`/product-list/category/${encodeURIComponent(cat.categoryName)}`}
+                    className="mobile-menu-subitem"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    {cat.categoryName}
+                  </Link>
+                ))}
+                {allCategories.length > MAX_DROPDOWN_ITEMS && (
+                  <Link
+                    to="/all-categories"
+                    className="mobile-menu-subitem mobile-menu-see-all"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    See All...
+                  </Link>
+                )}
+              </AccordionDetails>
+            </Accordion>
+            <Accordion
+              className="mobile-menu-accordion-card"
+              expanded={mobileBrandOpen}
+              onChange={() => setMobileBrandOpen((prev) => !prev)}
+              disableGutters
+              elevation={0}
+              sx={{ "&:before": { display: "none" } }}
+            >
+              <AccordionSummary
+                expandIcon={<MenuDownIcon />}
+                sx={{ padding: 0, minHeight: 0, "& .MuiAccordionSummary-content": { margin: 0 } }}
+              >
+                <span className="mobile-menu-accordion-label">Brands</span>
+              </AccordionSummary>
+              <AccordionDetails sx={{ padding: "12px 0 0 16px", display: "flex", flexDirection: "column", gap: "12px", margin: "0 0 10px 0" }}>
+                {(allBrands.length > MAX_DROPDOWN_ITEMS
+                  ? allBrands.slice(0, MAX_DROPDOWN_ITEMS)
+                  : allBrands
+                ).map((brand) => (
+                  <Link
+                    key={brand.brandID}
+                    to={`/product-list/brand/${encodeURIComponent(brand.brandName)}`}
+                    className="mobile-menu-subitem"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    {brand.brandName}
+                  </Link>
+                ))}
+                {allBrands.length > MAX_DROPDOWN_ITEMS && (
+                  <Link
+                    to="/all-brands"
+                    className="mobile-menu-subitem mobile-menu-see-all"
+                    onClick={() => setShowMobileMenu(false)}
+                  >
+                    See All...
+                  </Link>
+                )}
+              </AccordionDetails>
+            </Accordion>
+            <Link to="/product-list/sale" className="mobile-menu-plain-link" onClick={() => setShowMobileMenu(false)}>
+              Sales
+            </Link>
+            <Link to="/product-list/in-stock" className="mobile-menu-plain-link" onClick={() => setShowMobileMenu(false)}>
               In Stock
             </Link>
-            <div onClick={() => setShowMobileMenu(false)}>Contact Us</div>
+            <Link to="/contact-us" className="mobile-menu-plain-link" onClick={() => setShowMobileMenu(false)}>
+              Contact Us
+            </Link>
           </nav>
         )}
       </div>

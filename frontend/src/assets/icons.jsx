@@ -51,7 +51,8 @@ import {
   mdiClipboardAlertOutline,
   mdiCashRefund,
   mdiClipboardArrowDownOutline,
-  mdiMenu
+  mdiMenu,
+  mdiChevronDown
 } from "@mdi/js";
 
 const BellIcon = ({ size = 1 }) => <Icon path={mdiBellOutline} size={size} />;
@@ -225,6 +226,9 @@ const ClipboardArrowDownOutlineIcon = ({ size = 1 }) => (
 );
 
 const MenuIcon = ({ size = 1 }) => <Icon path={mdiMenu} size={size} />;
+const ChevronDownIcon = ({ size = 1, style, className }) => (
+  <Icon path={mdiChevronDown} size={size} style={style} className={className} />
+);
 
 export {
   BellIcon,
@@ -278,5 +282,6 @@ export {
   ClipboardAlertOutlineIcon,
   CashRefundIcon,
   ClipboardArrowDownOutlineIcon,
-  MenuIcon
+  MenuIcon,
+  ChevronDownIcon
 };

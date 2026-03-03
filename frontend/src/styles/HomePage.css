@@ -117,7 +117,7 @@
 }
 
 .marquee {
-  width: 100%;
+  width: 100vw;
   overflow: hidden;
   height: 200px;
   border-top: 1px solid var(--primary-color-light);
@@ -129,10 +129,6 @@
   height: 100%;
   width: max-content;
   will-change: transform;
-  -webkit-backface-visibility: hidden;
-  backface-visibility: hidden;
-  -webkit-animation: scroll-left 45s linear infinite;
-  animation: scroll-left 45s linear infinite;
 }
 
 .item {
@@ -219,12 +215,20 @@
   appearance: none;
   border: 1px solid var(--primary-color-lighter);
   cursor: pointer;
+  overflow: hidden;
+  position: relative;
 }
 
 .product-card-image-container img {
   object-fit: cover;
   width: 100%;
   height: 100%;
+  transform: scale(1);
+  transition: transform 0.5s ease;
+}
+
+.product-card-image-container img:hover {
+  transform: scale(1.1);
 }
 
 .product-card-title {
@@ -261,28 +265,6 @@
 
 .newest-next-button {
   right: 8px;
-}
-
-@-webkit-keyframes scroll-left {
-  from {
-    -webkit-transform: translateX(0) translateZ(0);
-    transform: translateX(0) translateZ(0);
-  }
-  to {
-    -webkit-transform: translateX(-50%) translateZ(0);
-    transform: translateX(-50%) translateZ(0);
-  }
-}
-
-@keyframes scroll-left {
-  from {
-    -webkit-transform: translateX(0) translateZ(0);
-    transform: translateX(0) translateZ(0);
-  }
-  to {
-    -webkit-transform: translateX(-50%) translateZ(0);
-    transform: translateX(-50%) translateZ(0);
-  }
 }
 
 /* ── Responsive ─────────────────────────── */
@@ -356,6 +338,28 @@
 
   .newest-items-list {
     --card-slide-width: 162px; /* 150px card + 12px gap */
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  /* Let the track flow naturally on mobile — no JS translateX */
+  .newest-items-list .newest-items-track {
+    transform: none !important;
+  }
+
+  /* Hide prev/next arrows on mobile */
+  .newest-prev-button,
+  .newest-next-button {
+    display: none;
+  }
+
+  /* Hide scrollbar but keep scrolling */
+  .newest-items-list::-webkit-scrollbar {
+    display: none;
+  }
+  .newest-items-list {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
   }
 
   /* Hide desktop brand cards, show mobile carousel */

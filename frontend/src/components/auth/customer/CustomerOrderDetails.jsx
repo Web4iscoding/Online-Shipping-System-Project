@@ -5,6 +5,7 @@ import { orders as ordersAPI, API_BASE } from "../../../api";
 import noImage from "../../../assets/no_image_available.jpg";
 import "../../../styles/CustomerOrderDetails.css";
 import { LeftArrowIcon } from "../../../assets/icons";
+import { formatDate } from "../../../utils/formatDate";
 import Order from "../customer/Order";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
@@ -17,7 +18,7 @@ const OrderItem = ({ orderItem }) => {
         <img
           className="order-item-thumbnail"
           src={
-            `${API_BASE}/${orderItem.product_details?.primary_image}` || noImage
+            orderItem.product_details?.primary_image ? `${API_BASE}/${orderItem.product_details?.primary_image}` : noImage
           }
         ></img>
         <div className="order-item-details">
@@ -102,11 +103,11 @@ const CustomerOrderDetails = () => {
             {orderData?.refundRequest && "(Refund Requested)"}
           </h2>
           <p className="customer-order-date">
-            Order Date: {orderData?.orderDate}
+            Order Date: {formatDate(orderData?.orderDate)}
           </p>
           {orderData?.status !== "Pending" && (
             <p className="customer-order-date">
-              Last Updated: {orderData?.statusUpdatedDate}
+              Last Updated: {formatDate(orderData?.statusUpdatedDate)}
             </p>
           )}
           <p className="customer-order-id">Order ID: #{orderData?.orderID}</p>

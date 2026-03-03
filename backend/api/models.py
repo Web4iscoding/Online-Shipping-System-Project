@@ -1,3 +1,6 @@
+import binascii
+import os
+
 from django.db import models
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator, MaxValueValidator
@@ -236,6 +239,7 @@ class Promotion(models.Model):
     startDate = models.DateTimeField()
     endDate = models.DateTimeField()
     status = models.CharField(max_length=20, choices=STATUS_CHOICES, default='Inactive')
+    notificationSent = models.BooleanField(default=False)
     createdTime = models.DateTimeField(auto_now_add=True)
     updatedTime = models.DateTimeField(auto_now=True)
 
@@ -318,3 +322,22 @@ class Notification(models.Model):
 
     def __str__(self):
         return f"Notification: {self.user.username} - {self.notificationType} - {'Read' if self.isRead else 'Unread'}"
+
+
+class DeviceToken(models.Model):
+    """Auth token that allows multiple tokens per user (one per device/browser)."""
+    key = models.CharField(max_length=40, primary_key=True)
+    user = models.ForeignKey(User, on_delete=models.CASCADE, related_name='device_tokens')
+    created = models.DateTimeField(auto_now_add=True)
+
+    def save(self, *args, **kwargs):
+        if not self.key:
+            self.key = self.generate_key()
+        super().save(*args, **kwargs)
+
+    @classmethod
+    def generate_key(cls):
+        return binascii.hexlify(os.urandom(20)).decode()
+
+    def __str__(self):
+        return f"DeviceToken: {self.user.username} ({self.key[:8]}…)"

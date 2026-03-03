@@ -66,11 +66,15 @@
 .order-card-summary {
   display: flex;
   gap: 16px;
+  align-items: center;
+  width: 100%;
 }
 
 .order-card-info {
   display: flex;
   flex-direction: column;
+  width: 240px;
+  flex-shrink: 0;
 }
 
 .order-card-status {
@@ -197,6 +201,11 @@
   .order-card-button-group {
     position: static;
     margin-top: 8px;
+  }
+
+  .order-card-info {
+    width: auto;
+    flex: 1;
   }
 
   .order-item-thumbnail {

@@ -70,9 +70,9 @@
   user-select: none;
 }
 
-.star-rating-star * {
+/* .star-rating-star * {
   color: #FFC107;
-}
+} */
 
 .write-review-field {
     display: flex;

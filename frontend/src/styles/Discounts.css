@@ -1,4 +1,8 @@
 /* Discounts Container */
+.discounts-container, .discounts-container * {
+    /* border: 1px solid red; */
+}
+
 .discounts-container {
   padding: 0 var(--desktop-padding);
   margin: 32px auto;
@@ -106,14 +110,16 @@
   font-size: 16px;
   color: white;
   margin-left: 8px;
+  width: 100px;
+  text-align: center;
 }
 
 .discount-status-badge.active {
-  background-color: var(--success-color);
+background-color: var(--primary-color-dark);
 }
 
 .discount-status-badge.inactive {
-  background-color: var(--primary-color);
+ background-color: var(--primary-color-light);
 }
 
 .discount-card-right {
@@ -376,18 +382,26 @@
     gap: 12px;
     padding: 16px;
   }
+  .discount-card-left {
+    width: 100%;
+  }
 
   .discount-card-right {
     align-items: flex-start;
   }
 
+  .discount-status-badge {
+    margin-left: auto;
+  }
+
   .discount-modal {
     width: calc(100vw - 32px);
     max-width: none;
+    top: 53%;
   }
 
   .create-discount-actions {
-    flex-direction: column;
+    flex-direction: column-reverse;
   }
 
   .create-discount-field input {

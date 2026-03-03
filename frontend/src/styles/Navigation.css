@@ -96,6 +96,24 @@
   line-height: 1;
 }
 
+.cart-badge {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  background-color: var(--primary-color);
+  color: white;
+  font-size: 10px;
+  font-weight: 700;
+  min-width: 16px;
+  height: 16px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0 4px;
+  line-height: 1;
+}
+
 /* Hamburger – hidden on desktop */
 .navbar-hamburger {
   display: none;
@@ -171,7 +189,7 @@
 .mobile-menu-links {
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  gap: 0;
   font-size: 16px;
 }
 
@@ -242,6 +260,12 @@
   width: 100%;
   height: 100%;
   object-fit: cover;
+    transform: scale(1);
+  transition: transform 0.5s ease;
+}
+
+.mobile-search-result-card img:hover {
+  transform: scale(1.1);
 }
 
 .mobile-search-result-card p {
@@ -266,7 +290,157 @@
   color: white;
 }
 
+/* ── Mega Dropdown ────────────────────────── */
+.navbar-dropdown-trigger {
+  position: relative;
+  cursor: pointer;
+}
+
+.navbar-dropdown-trigger:hover {
+  text-decoration: underline;
+}
+
+.navbar-mega-dropdown {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 64px;
+  background: white;
+box-shadow: 0 8px 12px -4px hsla(0, 0%, 0%, 0.15);  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 32px 48px;
+  padding: 32px var(--desktop-padding);
+  overflow: hidden;
+}
+
+.mega-dropdown-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  min-width: 160px;
+}
+
+.mega-dropdown-heading {
+  font-weight: 500;
+  font-size: 14px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--primary-color-lighter);
+  margin-bottom: 4px;
+}
+
+.mega-dropdown-item {
+  text-decoration: none;
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+.mega-dropdown-item:hover {
+  color: var(--primary-color-darker);
+}
+
+.mega-dropdown-see-all {
+  text-decoration: none;
+  color: var(--primary-color-darker);
+  font-size: 14px;
+  font-weight: 500;
+  margin-top: 4px;
+}
+
+.mega-dropdown-see-all:hover {
+  text-decoration: underline;
+}
+
+.mega-dropdown-images {
+  display: flex;
+  gap: 24px;
+  align-items: flex-start;
+}
+
+.mega-dropdown-image-placeholder {
+  width: 240px;
+  height: 240px;
+  background: var(--primary-color-lighter);
+  border: none;
+  border-radius: 12px;
+  cursor: pointer;
+  appearance: none;
+}
+
+.mega-dropdown-image-placeholder:hover {
+  opacity: 0.85;
+}
+
+.mobile-menu-links * {
+  /* border: 1px solid red; */
+}
+
+/* ── Mobile Menu Accordions (MUI) ────────── */
+.mobile-menu-accordion-card {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+  margin: 10px 0;
+}
+
+#mobile-category-accordion {
+  margin: 0 0 10px 0;
+}
+
+.mobile-menu-accordion-label {
+  font-size: 16px;
+  
+}
+
+.mobile-menu-subitem {
+  text-decoration: none;
+  color: var(--primary-color);
+  font-size: 14px;
+}
+
+.mobile-menu-subitem:hover {
+  color: var(--primary-color-darker);
+}
+
+.mobile-menu-see-all {
+  font-weight: 500;
+  color: var(--primary-color-darker);
+}
+
+.mobile-menu-plain-link {
+  text-decoration: none;
+  color: inherit;
+  font-size: 16px;
+  
+  padding: 8px 0;
+  display: flex;
+}
+
+.mobile-menu-plain-link:hover {
+  color: var(--primary-color);
+}
+
 /* ── Responsive ─────────────────────────── */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .navbar-links {
+    gap: 20px;
+    font-size: 12px;
+  }
+
+  .mega-dropdown-image-placeholder {
+    width: 160px;
+    height: 160px;
+  }
+
+  .navbar-mega-dropdown {
+    gap: 24px;
+  }
+
+  .mega-dropdown-list {
+    min-width: 140px;
+  }
+}
+
 @media (max-width: 768px) {
 
   .site-logo {

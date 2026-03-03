@@ -3,7 +3,8 @@
  * Handles all communication with the Django backend
  */
 
-const API_BASE = "http://192.168.1.108:8000";
+// const API_BASE = "http://192.168.1.108:8000";
+const API_BASE = "http://172.20.10.2:8000";
 // const API_BASE = "http://localhost:8000";
 const API_URL = `${API_BASE}/api`;
 
@@ -170,10 +171,13 @@ export const products = {
       },
     ),
 
-  byStore: (storeID, page = 1) =>
-    apiCall(`/products/by_store/?store_id=${storeID}&page=${page}`, {
-      method: "GET",
-    }),
+  byStore: (storeID, page = 1, search = "") =>
+    apiCall(
+      `/products/by_store/?store_id=${storeID}&page=${page}${
+        search ? `&search=${encodeURIComponent(search)}` : ""
+      }`,
+      { method: "GET" },
+    ),
 
   onSale: () =>
     apiCall("/products/on_sale/", {
@@ -523,10 +527,10 @@ export const vendor = {
       }),
     }),
 
-  dismissRefundRequest: (orderID) =>
+  dismissRefundRequest: (orderID, action = "approve") =>
     apiCall("/vendor/dismiss_refund_request/", {
       method: "PUT",
-      body: JSON.stringify({ order_id: orderID }),
+      body: JSON.stringify({ order_id: orderID, action }),
     }),
 
   // Promotion / Discount Management

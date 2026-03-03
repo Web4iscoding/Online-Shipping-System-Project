@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-1&l!*0t5bq^+(i3&a^8&f5gba*o-7+)#k2-x^v=1=al=3h&v+(
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['192.168.1.108', 'localhost']
+ALLOWED_HOSTS = ['192.168.1.108', 'localhost', '172.20.10.2']
 
 
 # Application definition
@@ -137,13 +137,14 @@ CORS_ALLOWED_ORIGINS = [
     "http://localhost:3000",
     "http://localhost:5173",
     "http://127.0.0.1:5173",
-    "http://192.168.1.108:5173"
+    "http://192.168.1.108:5173",
+    "http://172.20.10.2:5173",
 ]
 
 # Django REST Framework Configuration
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.TokenAuthentication',
+        'api.authentication.DeviceTokenAuthentication',
         'rest_framework.authentication.SessionAuthentication',
     ],
     # Permissions settings

@@ -10,6 +10,7 @@ import "../../styles/Register.css";
 import { PhoneInput } from "react-international-phone";
 import "react-international-phone/style.css";
 import WarningWindow from "../windows/WarningWindow";
+import { EyeIcon, EyeOffIcon } from "../../assets/icons";
 
 const VendorRegisterForm = ({
   message,
@@ -20,13 +21,35 @@ const VendorRegisterForm = ({
   handleChange,
   handlePhoneChange,
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.password !== confirmPassword) {
+      setConfirmError("Passwords do not match.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setConfirmError("");
+    handleRegister(e);
+  };
+
   return (
-    <form className="register-form" onSubmit={handleRegister}>
+    <form className="register-form" onSubmit={handleSubmit}>
       <h1>Let's get you started</h1>
       {showWarning && (
         <WarningWindow
           message={message}
           onClose={() => setShowWarning(false)}
+        />
+      )}
+      {confirmError && (
+        <WarningWindow
+          message={confirmError}
+          onClose={() => setConfirmError("")}
         />
       )}
       <div className="input-field">
@@ -42,13 +65,64 @@ const VendorRegisterForm = ({
       </div>
       <div className="input-field">
         <label htmlFor="password">Create New Password</label>
-        <input
-          id="password"
-          type="password"
-          onChange={handleChange}
-          required
-          minLength={6}
-        />
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            onChange={handleChange}
+            required
+            minLength={6}
+            style={{ width: "100%", paddingRight: "36px" }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            style={{
+              position: "absolute",
+              right: "8px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              color: "var(--primary-color-light)",
+            }}
+          >
+            {showPassword ? <EyeOffIcon size={0.8} /> : <EyeIcon size={0.8} />}
+          </button>
+        </div>
+      </div>
+      <div className="input-field">
+        <label htmlFor="confirmPassword">Confirm New Password</label>
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            id="confirmPassword"
+            type={showConfirm ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+            style={{ width: "100%", paddingRight: "36px" }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm((prev) => !prev)}
+            style={{
+              position: "absolute",
+              right: "8px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              color: "var(--primary-color-light)",
+            }}
+          >
+            {showConfirm ? <EyeOffIcon size={0.8} /> : <EyeIcon size={0.8} />}
+          </button>
+        </div>
       </div>
       <div className="name-fields">
         <div className="input-field">
@@ -94,13 +168,35 @@ const CustomerRegisterForm = ({
   handleChange,
   handlePhoneChange,
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirm, setShowConfirm] = useState(false);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [confirmError, setConfirmError] = useState("");
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (formData.password !== confirmPassword) {
+      setConfirmError("Passwords do not match.");
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setConfirmError("");
+    handleRegister(e);
+  };
+
   return (
-    <form className="register-form" onSubmit={handleRegister}>
+    <form className="register-form" onSubmit={handleSubmit}>
       <h1>Let's get you started</h1>
       {showWarning && (
         <WarningWindow
           message={message}
           onClose={() => setShowWarning(false)}
+        />
+      )}
+      {confirmError && (
+        <WarningWindow
+          message={confirmError}
+          onClose={() => setConfirmError("")}
         />
       )}
       <div className="input-field">
@@ -116,13 +212,64 @@ const CustomerRegisterForm = ({
       </div>
       <div className="input-field">
         <label htmlFor="password">Create New Password</label>
-        <input
-          id="password"
-          type="password"
-          onChange={handleChange}
-          required
-          minLength={6}
-        />
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            id="password"
+            type={showPassword ? "text" : "password"}
+            onChange={handleChange}
+            required
+            minLength={6}
+            style={{ width: "100%", paddingRight: "36px" }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowPassword((prev) => !prev)}
+            style={{
+              position: "absolute",
+              right: "8px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              color: "var(--primary-color-light)",
+            }}
+          >
+            {showPassword ? <EyeOffIcon size={0.8} /> : <EyeIcon size={0.8} />}
+          </button>
+        </div>
+      </div>
+      <div className="input-field">
+        <label htmlFor="confirmPassword">Confirm New Password</label>
+        <div style={{ position: "relative", display: "flex", alignItems: "center" }}>
+          <input
+            id="confirmPassword"
+            type={showConfirm ? "text" : "password"}
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            required
+            minLength={6}
+            style={{ width: "100%", paddingRight: "36px" }}
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirm((prev) => !prev)}
+            style={{
+              position: "absolute",
+              right: "8px",
+              background: "none",
+              border: "none",
+              cursor: "pointer",
+              padding: 0,
+              display: "flex",
+              alignItems: "center",
+              color: "var(--primary-color-light)",
+            }}
+          >
+            {showConfirm ? <EyeOffIcon size={0.8} /> : <EyeIcon size={0.8} />}
+          </button>
+        </div>
       </div>
       <div className="name-fields">
         <div className="input-field">
@@ -235,6 +382,8 @@ export const Register = () => {
         console.log("fds");
         console.log(formData);
         setError("Email and password are required");
+        setShowWarning(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
         return;
       }
     }
@@ -255,6 +404,7 @@ export const Register = () => {
           "Register failed. Please check your credentials.",
       );
       setShowWarning((prev) => prev || true);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     }
   };
 
@@ -265,7 +415,7 @@ export const Register = () => {
           message={error}
           showWarning={showWarning}
           setShowWarning={setShowWarning}
-          formaData={formData}
+          formData={formData}
           handleRegister={handleRegister}
           handleChange={handleChange}
           handlePhoneChange={handlePhoneChange}
@@ -275,7 +425,7 @@ export const Register = () => {
           message={error}
           showWarning={showWarning}
           setShowWarning={setShowWarning}
-          formaData={formData}
+          formData={formData}
           handleRegister={handleRegister}
           handleChange={handleChange}
           handlePhoneChange={handlePhoneChange}

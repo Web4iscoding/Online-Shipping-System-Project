@@ -8,6 +8,7 @@ import blank_pfp from "../../../assets/blank_pfp.png";
 import { auth as authAPI } from "../../../api";
 import { PhoneInput } from "react-international-phone";
 import SuccessWindow from "../../windows/SuccessWindow";
+import ImageCropModal from "../../modals/ImageCropModal";
 
 const CustomerAccountDetails = () => {
   const navigate = useNavigate();
@@ -16,6 +17,7 @@ const CustomerAccountDetails = () => {
   const [showEdit, setShowEdit] = useState([false, false, false, false, false]);
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoUploading, setPhotoUploading] = useState(false);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
   const fileInputRef = useRef(null);
   const [passwordData, setPasswordData] = useState({
     current: "",
@@ -188,15 +190,24 @@ const CustomerAccountDetails = () => {
     }
   };
 
-  const handlePhotoChange = async (e) => {
+  const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setCropImageSrc(URL.createObjectURL(file));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
-    // Show local preview immediately
-    setPhotoPreview(URL.createObjectURL(file));
+  const handleCropCancel = () => {
+    setCropImageSrc(null);
+  };
+
+  const handleCropSave = async (blob) => {
+    setCropImageSrc(null);
+    const previewUrl = URL.createObjectURL(blob);
+    setPhotoPreview(previewUrl);
 
     const fd = new FormData();
-    fd.append("profileImage", file);
+    fd.append("profileImage", blob, "profile.jpg");
 
     setPhotoUploading(true);
     try {
@@ -205,15 +216,13 @@ const CustomerAccountDetails = () => {
       delete normalized.user;
       setFormData((prev) => ({ ...prev, ...normalized }));
       updateUser(normalized);
-      setPhotoPreview(null); // use server URL from now on
+      setPhotoPreview(null);
       showSuccess("Profile photo updated.");
     } catch (err) {
       console.error("Photo upload failed:", err);
       setPhotoPreview(null);
     } finally {
       setPhotoUploading(false);
-      // Reset input so selecting the same file again triggers onChange
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -613,6 +622,14 @@ const CustomerAccountDetails = () => {
           </div>
         )}
       </div>
+
+      {cropImageSrc && (
+        <ImageCropModal
+          imageSrc={cropImageSrc}
+          onCancel={handleCropCancel}
+          onSave={handleCropSave}
+        />
+      )}
     </div>
   );
 };

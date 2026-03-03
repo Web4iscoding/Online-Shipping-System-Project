@@ -13,6 +13,7 @@ import Accordion from "@mui/material/Accordion";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import AccordionSummary from "@mui/material/AccordionSummary";
 import noImage from "../../../assets/no_image_available.jpg";
+import { formatDate } from "../../../utils/formatDate";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
 import OrderGeneralActionModal from "../../modals/OrderGeneralActionModal";
@@ -24,7 +25,7 @@ const OrderItem = ({ orderItem }) => {
         <img
           className="order-item-thumbnail"
           src={
-            `${API_BASE}/${orderItem.product_details?.primary_image}` || noImage
+            orderItem.product_details?.primary_image ? `${API_BASE}/${orderItem.product_details?.primary_image}` : noImage
           }
         ></img>
         <div className="order-item-details">
@@ -71,7 +72,7 @@ const OrderCard = ({
               Order{" "}
               <span className="order-card-order-id">#{order?.orderID}</span>
             </h2>
-            <p className="order-card-date">{order?.orderDate}</p>
+            <p className="order-card-date">{formatDate(order?.orderDate)}</p>
           </div>
           <div className={`order-card-status ${order?.status?.toLowerCase()}`}>
             {order?.status}
@@ -179,8 +180,8 @@ const Orders = () => {
     );
   };
 
-  const handleDismissRefund = async () => {
-    await vendorAPI.dismissRefundRequest(currentOrderId);
+  const handleDismissRefund = async (action = "approve") => {
+    await vendorAPI.dismissRefundRequest(currentOrderId, action);
     setOrders((prevData) =>
       prevData.map((order) =>
         order.orderID === currentOrderId
@@ -236,7 +237,7 @@ const Orders = () => {
             setShowOrderGeneralActionModal(false);
           }}
           onReject={async () => {
-            await handleDismissRefund();
+            await handleDismissRefund("reject");
             setShowOrderGeneralActionModal(false);
           }}
           orderData={orders.find((o) => o.orderID === currentOrderId)}

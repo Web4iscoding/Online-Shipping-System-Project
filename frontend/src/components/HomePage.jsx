@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import LiquidGlass from "liquid-glass-react";
 import "../styles/HomePage.css";
 import { LeftArrowIcon, RightArrowIcon } from "../assets/icons";
@@ -15,15 +15,18 @@ import { useNavigate } from "react-router-dom";
 import { Link } from "react-router-dom";
 import { products as productsApi, API_BASE } from "../api";
 import noImage from "../assets/no_image_available.jpg";
+import useSwipe from "../hooks/useSwipe";
 
-const ProductCard = ({ productID, thumbnailURL, productName }) => {
+const ProductCard = ({ productID, thumbnailURL, productName, quantity }) => {
   const navigate = useNavigate();
+  const soldOut = quantity !== undefined && quantity <= 0;
   return (
     <div className="product-card">
       <button
         className="product-card-image-container"
         onClick={() => navigate(`/product/${productID}`)}
       >
+        {soldOut && <span className="sold-out-badge">Sold Out</span>}
         <img className="product-card-image" src={thumbnailURL} alt={productName}></img>
       </button>
       <p className="product-card-title">{productName}</p>
@@ -39,6 +42,31 @@ const HomePage = () => {
   const [trackOffset, setTrackOffset] = useState(0);
   const [brandSlideIndex, setBrandSlideIndex] = useState(0);
   const [brandResetKey, setBrandResetKey] = useState(0);
+  const trackRef = useRef(null);
+
+  // JS-driven marquee: rAF loop scrolls track left, resets at half-width
+  useEffect(() => {
+    const el = trackRef.current;
+    if (!el) return;
+    let offset = 0;
+    let rafId;
+    let last = 0;
+    const speed = el.scrollWidth / 2 / 45; // px per second (match old 45s duration)
+
+    const step = (time) => {
+      if (last) {
+        const dt = (time - last) / 1000;
+        offset -= speed * dt;
+        const half = el.scrollWidth / 2;
+        if (offset <= -half) offset += half;
+        el.style.transform = `translateX(${offset}px)`;
+      }
+      last = time;
+      rafId = requestAnimationFrame(step);
+    };
+    rafId = requestAnimationFrame(step);
+    return () => cancelAnimationFrame(rafId);
+  }, []);
 
   const brandSlides = [
     { src: homepageMain, link: "/product-list/all-items" },
@@ -47,6 +75,15 @@ const HomePage = () => {
     { src: chromeHeartsLogo, link: "/product-list/brand/Chrome%20Hearts" },
     { src: balenciagaLogo, link: "/product-list/brand/Balenciaga" },
   ];
+
+  const brandSwipe = useSwipe(
+    brandSlideIndex,
+    (idx) => {
+      setBrandSlideIndex(idx);
+      setBrandResetKey((k) => k + 1);
+    },
+    brandSlides.length,
+  );
 
   // Auto-scroll brand carousel every 5 seconds
   useEffect(() => {
@@ -77,7 +114,7 @@ const HomePage = () => {
           {/* <h1></h1> */}
           <LiquidGlass
             displacementScale={64}
-            blurAmount={0.1}
+            blurAmount={0}
             saturation={130}
             aberrationIntensity={2}
             elasticity={0.35}
@@ -122,11 +159,17 @@ const HomePage = () => {
       </section>
       {/* Mobile brand carousel */}
       <section className="brand-carousel-mobile">
-        <div className="brand-carousel-viewport">
+        <div
+          className="brand-carousel-viewport"
+          onTouchStart={brandSwipe.onTouchStart}
+          onTouchMove={brandSwipe.onTouchMove}
+          onTouchEnd={brandSwipe.onTouchEnd}
+        >
           <div
             className="brand-carousel-track"
             style={{
-              transform: `translateX(-${brandSlideIndex * 100}%)`,
+              transform: `translateX(calc(-${brandSlideIndex * 100}% + ${brandSwipe.dragOffset}px))`,
+              transition: brandSwipe.dragOffset ? 'none' : undefined,
             }}
           >
             {brandSlides.map((slide, index) => (
@@ -142,7 +185,7 @@ const HomePage = () => {
           {brandSlideIndex === 0 && (
             <LiquidGlass
               displacementScale={64}
-              blurAmount={0.1}
+              blurAmount={0}
               saturation={130}
               aberrationIntensity={2}
               elasticity={0.35}
@@ -177,7 +220,7 @@ const HomePage = () => {
         </div>
       </section>
       <section className="marquee">
-        <div className="track">
+        <div className="track" ref={trackRef}>
           <div className="item">
             <img src={balenciagaHoodie}></img>
           </div>
@@ -246,6 +289,7 @@ const HomePage = () => {
                       : noImage
                   }
                   productName={product.productName}
+                  quantity={product.quantity}
                 />
               ))}
             </div>

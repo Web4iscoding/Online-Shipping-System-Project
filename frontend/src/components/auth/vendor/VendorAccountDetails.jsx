@@ -8,6 +8,7 @@ import blank_pfp from "../../../assets/blank_pfp.png";
 import { auth as authAPI } from "../../../api";
 import { PhoneInput } from "react-international-phone";
 import SuccessWindow from "../../windows/SuccessWindow";
+import ImageCropModal from "../../modals/ImageCropModal";
 
 const VendorAccountDetails = () => {
   const navigate = useNavigate();
@@ -17,6 +18,7 @@ const VendorAccountDetails = () => {
   const [photoPreview, setPhotoPreview] = useState(null);
   const [photoUploading, setPhotoUploading] = useState(false);
   const fileInputRef = useRef(null);
+  const [cropImageSrc, setCropImageSrc] = useState(null);
   const [passwordData, setPasswordData] = useState({
     current: "",
     next: "",
@@ -172,15 +174,23 @@ const VendorAccountDetails = () => {
     }
   };
 
-  const handlePhotoChange = async (e) => {
+  const handlePhotoChange = (e) => {
     const file = e.target.files[0];
     if (!file) return;
+    setCropImageSrc(URL.createObjectURL(file));
+    if (fileInputRef.current) fileInputRef.current.value = "";
+  };
 
-    // Show local preview immediately
-    setPhotoPreview(URL.createObjectURL(file));
+  const handleCropCancel = () => {
+    setCropImageSrc(null);
+  };
+
+  const handleCropSave = async (blob) => {
+    setCropImageSrc(null);
+    setPhotoPreview(URL.createObjectURL(blob));
 
     const fd = new FormData();
-    fd.append("profileImage", file);
+    fd.append("profileImage", blob, "profile.jpg");
 
     setPhotoUploading(true);
     try {
@@ -189,15 +199,13 @@ const VendorAccountDetails = () => {
       delete normalized.user;
       setFormData((prev) => ({ ...prev, ...normalized }));
       updateUser(normalized);
-      setPhotoPreview(null); // use server URL from now on
+      setPhotoPreview(null);
       showSuccess("Profile photo updated.");
     } catch (err) {
       console.error("Photo upload failed:", err);
       setPhotoPreview(null);
     } finally {
       setPhotoUploading(false);
-      // Reset input so selecting the same file again triggers onChange
-      if (fileInputRef.current) fileInputRef.current.value = "";
     }
   };
 
@@ -568,6 +576,14 @@ const VendorAccountDetails = () => {
           </div>
         )}
       </div>
+
+      {cropImageSrc && (
+        <ImageCropModal
+          imageSrc={cropImageSrc}
+          onCancel={handleCropCancel}
+          onSave={handleCropSave}
+        />
+      )}
     </div>
   );
 };

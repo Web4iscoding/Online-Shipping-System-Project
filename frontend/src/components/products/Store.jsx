@@ -10,12 +10,14 @@ import {
   StarIcon,
   StarOutlineIcon,
   PackageIcon,
+  SearchIcon,
 } from "../../assets/icons";
 import { useParams } from "react-router-dom";
 import noImage from "../../assets/no_image_available.jpg";
 import blankPfp from "../../assets/blank_pfp.png";
 
 import "../../styles/Store.css";
+import useSwipe from "../../hooks/useSwipe";
 
 //stores.detail, stores.list
 //products.byStore(id, page)
@@ -24,8 +26,10 @@ const ProductCard = ({
   productID = "",
   thumbnailURL,
   productName = "Lorem Ipsum Dolor Sit Amet",
+  quantity,
 }) => {
   const navigate = useNavigate();
+  const soldOut = quantity !== undefined && quantity <= 0;
 
   return (
     <div className="product-list-card">
@@ -33,6 +37,7 @@ const ProductCard = ({
         className="product-list-card-image-container"
         onClick={() => navigate(`/product/${productID}`)}
       >
+        {soldOut && <span className="sold-out-badge">Sold Out</span>}
         <img className="product-list-card-image" src={thumbnailURL}></img>
       </button>
       <p className="product-list-card-title">{productName}</p>
@@ -45,20 +50,50 @@ const Store = () => {
   const navigate = useNavigate();
   const [storeData, setStoreData] = useState({});
   const [storeProducts, setStoreProducts] = useState([]);
+  const [storeTotal, setStoreTotal] = useState(0);
+  const [searchResults, setSearchResults] = useState([]);
+  const [searchTotal, setSearchTotal] = useState(0);
   const [currentPictureIndex, setCurrentPictureIndex] = useState(0);
   const [resetKey, setResetKey] = useState(0);
+  const [query, setQuery] = useState("");
+  const swipe = useSwipe(
+    currentPictureIndex,
+    (idx) => { setCurrentPictureIndex(idx); setResetKey((k) => k + 1); },
+    storeData.photos?.length || 1,
+  );
 
   useEffect(() => {
     async function performFetch() {
       const storeData = await storesAPI.detail(id);
       const storeProductsData = await productsAPI.byStore(id, 1);
-      setStoreProducts(storeProductsData.results);
+      const results = storeProductsData.results ?? storeProductsData;
+      setStoreProducts(results);
+      setStoreTotal(storeProductsData.count ?? results.length);
       setStoreData(storeData);
-      console.log(storeData);
-      console.log(storeProductsData);
     }
     performFetch();
   }, [id]);
+
+  useEffect(() => {
+    const trimmed = query.trim();
+    if (!trimmed) {
+      setSearchResults([]);
+      setSearchTotal(0);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const data = await productsAPI.byStore(id, 1, trimmed);
+        const results = data.results ?? data;
+        setSearchResults(results);
+        setSearchTotal(data.count ?? results.length);
+      } catch {
+        setSearchResults([]);
+        setSearchTotal(0);
+      }
+    }, 400);
+    return () => clearTimeout(timer);
+  }, [query, id]);
 
   useEffect(() => {
     const total = storeData.photos?.length;
@@ -74,11 +109,17 @@ const Store = () => {
       <div className="store-header">
         {storeData.photos?.length > 0 && (
           <div className="store-header-left">
-            <div className="store-header-image-viewport">
+            <div
+              className="store-header-image-viewport"
+              onTouchStart={swipe.onTouchStart}
+              onTouchMove={swipe.onTouchMove}
+              onTouchEnd={swipe.onTouchEnd}
+            >
               <div
                 className="store-header-image-track"
                 style={{
-                  transform: `translateX(-${currentPictureIndex * 100}%)`,
+                  transform: `translateX(calc(-${currentPictureIndex * 100}% + ${swipe.dragOffset}px))`,
+                  transition: swipe.dragOffset ? 'none' : undefined,
                 }}
               >
                 {(storeData.photos?.length
@@ -158,9 +199,20 @@ const Store = () => {
       </div>
 
       <div className="store-products-section">
-        <h2>Newest Items</h2>
+        <div className="store-products-header">
+            <h2>{query.trim() ? `Results for "${query.trim()}"` : "Newest Items"}</h2>
+            <div className="store-search-product-container">
+              <SearchIcon size={1} style={{ marginRight: "8px" }} />
+              <input
+                type="text"
+                placeholder="Search in this store..."
+                value={query}
+                onChange={(e) => setQuery(e.target.value)}
+              />
+            </div>
+        </div>
         <div className="store-product-list">
-          {storeProducts.map((product) => (
+          {(query.trim() ? searchResults : storeProducts).map((product) => (
             <ProductCard
               key={product.productID}
               productID={product.productID}
@@ -170,13 +222,18 @@ const Store = () => {
                   : noImage
               }
               productName={product.productName}
+              quantity={product.quantity}
             />
           ))}
         </div>
-        {storeProducts.length === 8 && (
+        {(query.trim() ? searchTotal : storeTotal) > 8 && (
           <button
             id="view-all-results-button"
-            onClick={() => navigate(`/product-list/store/${id}`)}
+            onClick={() =>
+              query.trim()
+                ? navigate(`/product-list/store/${id}?query=${encodeURIComponent(query.trim())}`)
+                : navigate(`/product-list/store/${id}`)
+            }
           >
             View All Items
           </button>

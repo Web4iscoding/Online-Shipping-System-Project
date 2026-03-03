@@ -23,8 +23,10 @@ const ProductCard = ({
   productID = "",
   thumbnailURL,
   productName = "Lorem Ipsum Dolor Sit Amet",
+  quantity,
 }) => {
   const navigate = useNavigate();
+  const soldOut = quantity !== undefined && quantity <= 0;
 
   return (
     <div className="product-list-card">
@@ -32,6 +34,7 @@ const ProductCard = ({
         className="product-list-card-image-container"
         onClick={() => navigate(`/product/${productID}`)}
       >
+        {soldOut && <span className="sold-out-badge">Sold Out</span>}
         <img className="product-list-card-image" src={thumbnailURL}></img>
       </button>
       <p className="product-list-card-title">{productName}</p>
@@ -78,6 +81,10 @@ const ProductList = () => {
 
     if (filter === "in-stock") {
       return { type: "in-stock", value: null };
+    }
+
+    if (filter === "sale") {
+      return { type: "sale", value: null };
     }
 
     const [parsedType, ...rest] = filter.split("/");
@@ -141,6 +148,17 @@ const ProductList = () => {
           return;
         }
 
+        if (type === "sale") {
+          const response = await productsAPI.onSale();
+          if (!isMounted) return;
+          const results = response.results || response;
+          const count = response.count ?? results.length;
+          setProducts(results);
+          setTotalPages(Math.max(1, Math.ceil(count / pageCount)));
+          setFilterLabel("Sales");
+          return;
+        }
+
         if (type === "brand") {
           const brands = await brandsAPI.list();
           if (!isMounted) return;
@@ -194,8 +212,9 @@ const ProductList = () => {
         }
 
         if (type === "store") {
+          const searchQuery = searchParams.get("query") || "";
           const [response, store] = await Promise.all([
-            productsAPI.byStore(value, currentPage),
+            productsAPI.byStore(value, currentPage, searchQuery),
             storesAPI.detail(value),
           ]);
           if (!isMounted) return;
@@ -203,7 +222,11 @@ const ProductList = () => {
           const count = response.count ?? results.length;
           setProducts(results);
           setTotalPages(Math.max(1, Math.ceil(count / pageCount)));
-          setFilterLabel(`Store / ${store.storeName ?? value}`);
+          setFilterLabel(
+            searchQuery
+              ? `Store / ${store.storeName ?? value} / "${searchQuery}"`
+              : `Store / ${store.storeName ?? value}`,
+          );
         }
       } catch (error) {
         if (!isMounted) return;
@@ -266,6 +289,7 @@ const ProductList = () => {
                 }
                 productName={product.productName}
                 productID={product.productID}
+                quantity={product.quantity}
               />
             ))}
             {Array.from({ length: placeholderCount }).map((_, index) => (

@@ -52,6 +52,9 @@ import Store from "./components/products/Store";
 import WriteReview from "./components/auth/customer/WriteReview";
 import AllReviews from "./components/products/AllReviews";
 import Wishlist from "./components/auth/customer/Wishlist";
+import PurchaseComplete from "./components/cart/PurchaseComplete";
+import AllCategories from "./components/products/AllCategories";
+import AllBrands from "./components/products/AllBrands";
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
@@ -115,6 +118,10 @@ const AppContent = () => {
           <Route path="/product/:id/reviews" element={<AllReviews />} />
           <Route path="/review/:productId/:orderItemId" element={<WriteReview />} />
           <Route path="/wishlist" element={<Wishlist />} />
+          <Route path="/purchase-complete" element={<PurchaseComplete />} />
+          <Route path="/all-categories" element={<AllCategories />} />
+          <Route path="/all-brands" element={<AllBrands />} />
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>
       <Footer />

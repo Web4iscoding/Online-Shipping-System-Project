@@ -163,6 +163,10 @@
     gap: 24px;
   }
 
+  .catalog-card {
+    height: 180px;
+  }
+
   .catalog-utility-bar {
     gap: 16px;
   }

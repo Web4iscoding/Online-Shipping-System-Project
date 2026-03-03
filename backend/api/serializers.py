@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
-from rest_framework.authtoken.models import Token
 
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia,
@@ -42,8 +41,6 @@ class CustomerRegisterSerializer(serializers.Serializer):
             shippingAddress2=validated_data.get('shippingAddress2', ''),
             shippingAddress3=validated_data.get('shippingAddress3', '')
         )
-        # Create Token
-        Token.objects.create(user=user)
         return customer
     
     def validate_username(self, value):
@@ -88,8 +85,6 @@ class VendorRegisterSerializer(serializers.Serializer):
             vendorID=vendor,
             storeName=validated_data.get('storeName', '')
         )
-        # Create Token
-        Token.objects.create(user=user)
         return vendor
     
     def validate_username(self, value):

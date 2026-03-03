@@ -33,6 +33,7 @@
   appearance: none;
   border: 1px solid var(--primary-color-lighter);
   cursor: pointer;
+  position: relative;
 }
 
 .product-list-card-image {
@@ -183,6 +184,7 @@
 .no-products-message * {
   color: var(--primary-color);
 }
+
 
 @keyframes rotate {
   from {

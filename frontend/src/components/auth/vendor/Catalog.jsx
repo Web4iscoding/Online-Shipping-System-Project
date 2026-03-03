@@ -11,6 +11,7 @@ import {
 import "../../../styles/Catalog.css";
 import gucci from "../../../assets/gucci.png";
 import { vendor as vendorAPI, API_BASE } from "../../../api";
+import { formatDate } from "../../../utils/formatDate";
 import CatalogCreateModal from "../../modals/CatalogCreateModal";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import noImage from "../../../assets/no_image_available.jpg";
@@ -70,8 +71,8 @@ const CatalogCard = ({
       <div className="catalog-card-content">
         <img src={src}></img>
         <div>
-          <p>Created: {createdTime}</p>
-          <p>Last Updated: {updatedTime}</p>
+          <p>Created: {formatDate(createdTime)}</p>
+          <p>Last Updated: {formatDate(updatedTime)}</p>
         </div>
       </div>
     </div>

@@ -67,5 +67,6 @@
 
   .register-selection-button-group > * {
     height: 180px;
+    padding: 32px;
   }
 }

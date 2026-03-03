@@ -5,6 +5,7 @@ import { vendor as vendorAPI, API_BASE } from "../../../api";
 import noImage from "../../../assets/no_image_available.jpg";
 import "../../../styles/VendorOrderDetails.css";
 import { LeftArrowIcon, AlertTriangleIcon } from "../../../assets/icons";
+import { formatDate } from "../../../utils/formatDate";
 import Order from "../customer/Order";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
@@ -17,7 +18,7 @@ const OrderItem = ({ orderItem }) => {
         <img
           className="order-item-thumbnail"
           src={
-            `${API_BASE}/${orderItem.product_details?.primary_image}` || noImage
+            orderItem.product_details?.primary_image ? `${API_BASE}/${orderItem.product_details?.primary_image}` : noImage
           }
         ></img>
         <div className="order-item-details">
@@ -61,8 +62,8 @@ const VendorOrderDetails = () => {
     }));
   };
 
-  const handleDismissRefund = async () => {
-    await vendorAPI.dismissRefundRequest(id);
+  const handleDismissRefund = async (action = "approve") => {
+    await vendorAPI.dismissRefundRequest(id, action);
     setOrderData((prevData) => ({
       ...prevData,
       refundRequest: false,
@@ -104,7 +105,7 @@ const VendorOrderDetails = () => {
             setShowOrderGeneralActionModal(false);
           }}
           onReject={async () => {
-            await handleDismissRefund();
+            await handleDismissRefund("reject");
             setShowOrderGeneralActionModal(false);
           }}
           orderData={orderData}
@@ -157,11 +158,11 @@ const VendorOrderDetails = () => {
             {pendingRefund && "Refund Requested From Customer"}{" "}
           </h2>
           <p className="vendor-order-date">
-            Order Date: {orderData?.orderDate}
+            Order Date: {formatDate(orderData?.orderDate)}
           </p>
           {orderData?.status !== "Pending" && (
             <p className="vendor-order-date">
-              Last Updated: {orderData?.statusUpdatedDate}
+              Last Updated: {formatDate(orderData?.statusUpdatedDate)}
             </p>
           )}
           <p className="vendor-order-id">Order ID: #{orderData?.orderID}</p>

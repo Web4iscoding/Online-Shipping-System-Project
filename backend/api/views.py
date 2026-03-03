@@ -6,12 +6,12 @@ from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
 from django.db.models import Q
 from django.utils import timezone
-from rest_framework.authtoken.models import Token
 from decimal import Decimal
 
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia, Category, Brand,
-    CartItem, Order, OrderItem, WishlistItem, Promotion, Review, ReviewMedia, Notification
+    CartItem, Order, OrderItem, WishlistItem, Promotion, Review, ReviewMedia, Notification,
+    DeviceToken
 )
 from .serializers import (
     CustomerSerializer, VendorSerializer, CustomerRegisterSerializer,
@@ -37,7 +37,7 @@ class CustomerRegisterView(APIView):
         serializer = CustomerRegisterSerializer(data=request.data)
         if serializer.is_valid():
             customer = serializer.save()
-            token = Token.objects.get(user=customer.user)
+            token = DeviceToken.objects.create(user=customer.user)
             return Response({
                 'message': 'Customer registered successfully',
                 'token': token.key,
@@ -55,7 +55,7 @@ class VendorRegisterView(APIView):
         serializer = VendorRegisterSerializer(data=request.data)
         if serializer.is_valid():
             vendor = serializer.save()
-            token = Token.objects.get(user=vendor.user)
+            token = DeviceToken.objects.create(user=vendor.user)
             return Response({
                 'message': 'Vendor registered successfully',
                 'token': token.key,
@@ -73,7 +73,7 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.validated_data['user']
-            token, _ = Token.objects.get_or_create(user=user)
+            token = DeviceToken.objects.create(user=user)
             
             # Determine user type
             user_type = 'unknown'
@@ -95,11 +95,13 @@ class LoginView(APIView):
 
 
 class LogoutView(APIView):
-    """Logout by deleting token."""
+    """Logout by deleting only the current device's token."""
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        request.user.auth_token.delete()
+        # request.auth is the DeviceToken instance set by DeviceTokenAuthentication
+        if request.auth and isinstance(request.auth, DeviceToken):
+            request.auth.delete()
         return Response({'message': 'Logout successful'}, status=status.HTTP_200_OK)
 
 
@@ -112,9 +114,10 @@ class ChangePasswordView(APIView):
         if serializer.is_valid():
             request.user.set_password(serializer.validated_data['new_password'])
             request.user.save()
-            # Delete old token and create a new one
-            request.user.auth_token.delete()
-            token = Token.objects.create(user=request.user)
+            # Delete only the current device's token and create a new one
+            if request.auth and isinstance(request.auth, DeviceToken):
+                request.auth.delete()
+            token = DeviceToken.objects.create(user=request.user)
             return Response({
                 'message': 'Password changed successfully',
                 'token': token.key
@@ -260,12 +263,19 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
 
     @action(detail=False, methods=['GET'])
     def by_store(self, request):
-        """Get products from a specific store."""
+        """Get products from a specific store, with optional search filtering."""
         store_id = request.query_params.get('store_id')
+        search = request.query_params.get('search', '').strip()
         if not store_id:
             return Response({'error': 'store_id required'}, status=status.HTTP_400_BAD_REQUEST)
-        
+
         products = self.get_queryset().filter(storeID_id=store_id)
+        if search:
+            products = products.filter(
+                Q(productName__icontains=search) |
+                Q(description__icontains=search) |
+                Q(brand__brandName__icontains=search)
+            )
         page = self.paginate_queryset(products)
         if page is not None:
             serializer = ProductListSerializer(page, many=True)
@@ -1263,15 +1273,26 @@ class VendorStoreViewSet(viewsets.ViewSet):
         order.refundReason = None
         order.save()
 
-        # Notify customer that refund was approved / dismissed
-        Notification.objects.create(
-            user=order.customerID.user,
-            notificationType='refund_approved',
-            title='Refund Approved',
-            message=f'Your refund request for order #{order.orderID} has been approved.',
-            link=f'/customer/order-details/{order.orderID}',
-            orderID=order,
-        )
+        action = request.data.get('action', 'approve')
+
+        if action == 'reject':
+            Notification.objects.create(
+                user=order.customerID.user,
+                notificationType='refund_rejected',
+                title='Refund Rejected',
+                message=f'Your refund request for order #{order.orderID} has been rejected.',
+                link=f'/customer/order-details/{order.orderID}',
+                orderID=order,
+            )
+        else:
+            Notification.objects.create(
+                user=order.customerID.user,
+                notificationType='refund_approved',
+                title='Refund Approved',
+                message=f'Your refund request for order #{order.orderID} has been approved.',
+                link=f'/customer/order-details/{order.orderID}',
+                orderID=order,
+            )
 
         return Response({
             'message': 'Refund request dismissed',
@@ -1378,22 +1399,25 @@ class VendorStoreViewSet(viewsets.ViewSet):
             discountRate=discount_rate,
             startDate=parsed_start,
             endDate=parsed_end,
-            status=promo_status
+            status=promo_status,
+            notificationSent=promo_status == 'Active'
         )
 
         # Notify customers who have this product in their wishlist
-        wishlist_items = WishlistItem.objects.filter(
-            productID=product
-        ).select_related('customerID__user')
-        for wi in wishlist_items:
-            Notification.objects.create(
-                user=wi.customerID.user,
-                notificationType='wishlist_sale',
-                title='Wishlist Item On Sale',
-                message=f'{product.productName} is now {discount_rate}% off!',
-                link=f'/product/{product.productID}',
-                productID=product,
-            )
+        # Only send notifications if the promotion is active right now
+        if promo_status == 'Active':
+            wishlist_items = WishlistItem.objects.filter(
+                productID=product
+            ).select_related('customerID__user')
+            for wi in wishlist_items:
+                Notification.objects.create(
+                    user=wi.customerID.user,
+                    notificationType='wishlist_sale',
+                    title='Wishlist Item On Sale',
+                    message=f'{product.productName} is now {discount_rate}% off!',
+                    link=f'/product/{product.productID}',
+                    productID=product,
+                )
 
         serializer = PromotionSerializer(promotion)
         return Response(serializer.data, status=status.HTTP_201_CREATED)
