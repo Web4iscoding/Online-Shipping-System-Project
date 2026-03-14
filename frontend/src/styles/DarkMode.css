@@ -1,0 +1,636 @@
+/**
+ * Dark Mode Overrides
+ * Applied when html.dark class is present
+ */
+
+/* ── Smooth transitions for theme switching ─── */
+*,
+*::before,
+*::after {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
+/* Exclude elements where transition causes issues */
+.product-list-card-image,
+.mobile-search-result-card img,
+.nav-avatar,
+.mega-dropdown-image-placeholder,
+img {
+  transition: transform 0.5s ease;
+}
+
+/* ── Dark mode root variable overrides ────── */
+html.dark {
+  --primary-color: hsl(0, 0%, 55%);
+  --primary-color-dark: hsl(0, 0%, 65%);
+  --primary-color-darker: hsl(0, 0%, 85%);
+  --primary-color-light: hsl(0, 0%, 30%);
+  --primary-color-lighter: hsl(0, 0%, 22%);
+
+  --secondary-color: hsl(232 40% 55%);
+  --secondary-color-dark: hsl(232 40% 65%);
+  --secondary-color-darker: hsl(232 40% 80%);
+  --secondary-color-light: hsl(232 30% 30%);
+  --secondary-color-lighter: hsl(232 20% 20%);
+
+  --warning-color: hsl(360 55% 55%);
+  --warning-color-dark: hsl(360 55% 65%);
+  --warning-color-darker: hsl(360 55% 80%);
+  --warning-color-light: hsl(360 30% 25%);
+  --warning-color-lighter: hsl(360 20% 18%);
+
+  --success-color: hsl(131 40% 45%);
+  --success-color-dark: hsl(131 40% 55%);
+  --success-color-darker: hsl(131 40% 75%);
+  --success-color-light: hsl(131 20% 25%);
+  --success-color-lighter: hsl(131 15% 18%);
+
+  --caution-color: hsl(57 40% 45%);
+  --caution-color-dark: hsl(57 40% 55%);
+  --caution-color-darker: hsl(57 40% 75%);
+  --caution-color-light: hsl(57 20% 25%);
+  --caution-color-lighter: hsl(57 15% 18%);
+
+  --default-box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.5);
+
+  --dm-bg: hsl(0, 0%, 9%);
+  --dm-surface: hsl(0, 0%, 13%);
+  --dm-surface-elevated: hsl(0, 0%, 16%);
+  --dm-border: hsl(0, 0%, 22%);
+  --dm-text: hsl(0, 0%, 85%);
+  --dm-text-muted: hsl(0, 0%, 60%);
+
+  color-scheme: dark;
+}
+
+/* ── Body & root ────────────────────────── */
+html.dark body {
+  background: var(--dm-bg);
+  color: var(--dm-text);
+}
+
+html.dark * {
+  color: var(--dm-text);
+}
+
+/* ── Scrollbar ──────────────────────────── */
+html.dark ::-webkit-scrollbar-track {
+  background: var(--dm-surface);
+}
+
+html.dark ::-webkit-scrollbar-thumb {
+  background: hsl(0, 0%, 35%);
+}
+
+html.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(0, 0%, 45%);
+}
+
+/* ── Navbar ──────────────────────────────── */
+html.dark .navbar {
+  background-color: var(--dm-surface);
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.5);
+}
+
+html.dark .site-logo {
+  color: white;
+}
+
+html.dark .navbar-mega-dropdown {
+  background: var(--dm-surface);
+  box-shadow: 0 8px 12px -4px hsla(0, 0%, 0%, 0.4);
+}
+
+html.dark .mega-dropdown-heading {
+  border-bottom-color: var(--dm-border);
+}
+
+html.dark .mega-dropdown-image-placeholder {
+  background: var(--dm-surface-elevated);
+}
+
+/* ── Mobile menu ────────────────────────── */
+html.dark .mobile-menu-drawer {
+  background: var(--dm-surface);
+}
+
+html.dark .mobile-menu-backdrop.open {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+html.dark .mobile-menu-search-wrapper {
+  border-bottom-color: var(--dm-border);
+}
+
+html.dark .mobile-menu-search-wrapper input {
+  background: transparent;
+  color: var(--dm-text);
+}
+
+html.dark .mobile-menu-view-more {
+  border-color: var(--dm-text);
+  color: var(--dm-text);
+}
+
+html.dark .mobile-menu-view-more:hover {
+  background-color: var(--dm-text);
+  color: var(--dm-surface);
+}
+
+html.dark .mobile-search-result-card button {
+  border-color: var(--dm-border);
+}
+
+/* ── Notification badge color fix ────────── */
+html.dark .notification-badge,
+html.dark .cart-badge {
+  color: white;
+}
+
+/* ── Sold out badge ─────────────────────── */
+html.dark .sold-out-badge {
+  color: white;
+}
+
+/* ── Product list cards ─────────────────── */
+html.dark .product-list-card-image-container {
+  border-color: var(--dm-border);
+}
+
+/* ── General surfaces ───────────────────── */
+
+/* Commonly used white bg containers */
+html.dark .homepage-container,
+html.dark .product-detail-container,
+html.dark .cart-container,
+html.dark .checkout-container,
+html.dark .profile-container,
+html.dark .login-container,
+html.dark .register-container,
+html.dark .register-selection-container,
+html.dark .my-orders-container,
+html.dark .order-container,
+html.dark .vendor-order-details-container,
+html.dark .customer-order-details-container,
+html.dark .account-details-container,
+html.dark .vendor-account-details-container,
+html.dark .catalog-container,
+html.dark .catalog-details-container,
+html.dark .orders-container,
+html.dark .shipped-orders-container,
+html.dark .discounts-container,
+html.dark .store-details-container,
+html.dark .store-container,
+html.dark .all-reviews-container,
+html.dark .wishlist-container,
+html.dark .write-review-container,
+html.dark .purchase-complete-container,
+html.dark .all-categories-container,
+html.dark .all-brands-container,
+html.dark .contact-us-container {
+  color: var(--dm-text);
+}
+
+/* ── Cards & elevated surfaces ──────────── */
+html.dark .product-detail-image-container,
+html.dark .product-card,
+html.dark .cart-item,
+html.dark .order-card,
+html.dark .order-item-card {
+  border-color: var(--dm-border);
+}
+
+/* ── Form inputs ────────────────────────── */
+html.dark input,
+html.dark textarea,
+html.dark select {
+  background-color: var(--dm-surface-elevated);
+  color: var(--dm-text);
+  border-color: var(--dm-border);
+}
+
+html.dark input::placeholder,
+html.dark textarea::placeholder {
+  color: var(--dm-text-muted);
+}
+
+html.dark input:focus,
+html.dark textarea:focus,
+html.dark select:focus {
+  border-color: hsl(0, 0%, 45%);
+}
+
+/* ── Buttons ────────────────────────────── */
+html.dark button {
+  color: var(--dm-text);
+}
+
+/* ── Footer ─────────────────────────────── */
+html.dark .footer-container {
+  border-top-color: var(--dm-border);
+}
+
+/* ── Search Modal ───────────────────────── */
+html.dark .search-modal {
+  background: var(--dm-surface);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .search-modal input {
+  background: var(--dm-surface-elevated);
+}
+
+/* ── Notifications Panel ────────────────── */
+html.dark .notifications-panel {
+  background: var(--dm-surface);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+}
+
+html.dark .notification-item {
+  border-bottom-color: var(--dm-border);
+}
+
+html.dark .notification-item:hover {
+  background: var(--dm-surface-elevated);
+}
+
+/* ── Modal backdrop ─────────────────────── */
+html.dark .modal-backdrop {
+  background: rgba(0, 0, 0, 0.6);
+}
+
+/* ── Tables ─────────────────────────────── */
+html.dark th {
+  background: var(--dm-surface-elevated);
+}
+
+html.dark tr:hover {
+  background: var(--dm-surface-elevated);
+}
+
+html.dark td,
+html.dark th {
+  border-bottom-color: var(--dm-border);
+}
+
+/* ── Pagination ─────────────────────────── */
+html.dark .pagination button {
+  color: var(--dm-text);
+}
+
+/* ── Links ──────────────────────────────── */
+html.dark a {
+  color: var(--dm-text);
+}
+
+html.dark .mega-dropdown-item {
+  color: var(--dm-text-muted);
+}
+
+html.dark .mega-dropdown-item:hover {
+  color: var(--dm-text);
+}
+
+html.dark .mobile-menu-subitem {
+  color: var(--dm-text-muted);
+}
+
+html.dark .mobile-menu-subitem:hover {
+  color: var(--dm-text);
+}
+
+/* ── Accordions (MUI overrides) ─────────── */
+html.dark .mobile-menu-accordion-card {
+  background: transparent !important;
+}
+
+html.dark .MuiAccordionSummary-expandIconWrapper svg {
+  fill: var(--dm-text);
+}
+
+/* ── International Phone Input ─────────── */
+html.dark {
+  --react-international-phone-background-color: var(--dm-surface-elevated);
+  --react-international-phone-text-color: var(--dm-text);
+  --react-international-phone-border-color: var(--dm-border);
+  --react-international-phone-disabled-text-color: var(--dm-text-muted);
+  --react-international-phone-country-selector-background-color-hover: var(--dm-surface);
+  --react-international-phone-selected-dropdown-item-background-color: var(--dm-surface-elevated);
+}
+
+/* ── Box shadows for elevated elements ───── */
+html.dark .product-list-card-image-container,
+html.dark .mobile-search-result-card button {
+  box-shadow: none;
+}
+
+/* ── Checkout / Cart specific ────────────── */
+html.dark .cart-item-image-container,
+html.dark .checkout-item-image {
+  border-color: var(--dm-border);
+}
+
+/* ── Loading spinner ─────────────────────── */
+html.dark .loading-spinner {
+  border-color: var(--dm-border);
+  border-top-color: var(--dm-text);
+}
+
+/* ── Image crop modal, warning/success windows ── */
+html.dark .image-crop-modal,
+html.dark .success-window,
+html.dark .warning-window {
+  background: var(--dm-surface);
+}
+
+/* Crop overlay: keep semi-transparent so image is visible outside the crop circle */
+html.dark .reactEasyCrop_CropArea {
+  color: rgba(0, 0, 0, 0.5) !important;
+}
+
+/* ── Star/review colors ─────────────────── */
+html.dark .star-icon {
+  color: hsl(45, 90%, 55%) !important;
+}
+
+/* ── Strikethrough prices ─────────────────── */
+html.dark .original-price,
+html.dark .product-list-card-original-price {
+  color: var(--dm-text-muted);
+}
+
+/* ── Discount badge ─────────────────────── */
+html.dark .discount-badge {
+  color: white;
+}
+
+/* ── Vendor / Order related ─────────────── */
+html.dark .order-status-badge {
+  font-weight: 600;
+}
+
+/* ── General white bg overrides ─────────── */
+html.dark .white-bg,
+html.dark [style*="background: white"],
+html.dark [style*="background-color: white"] {
+  background: var(--dm-surface) !important;
+}
+
+/* ── Specific white bg elements ─────────── */
+html.dark .catalog-create-container,
+html.dark .newest-items-left button,
+html.dark #cart-shop-now-button,
+html.dark #continue-shopping-button,
+html.dark .review-media-modal,
+html.dark .view-all-reviews-button,
+html.dark .notifications-container,
+html.dark .register-selection-button-group > *,
+html.dark .discount-modal,
+html.dark #create-discount-cancel,
+html.dark .pending,
+html.dark .order-card-view-details-button,
+html.dark .auth-card,
+html.dark .toggle-btn,
+html.dark .cancel-order-container,
+html.dark .order-general-action-container,
+html.dark .search-results,
+html.dark #view-all-results-button,
+html.dark .purchase-complete-secondary {
+  background-color: var(--dm-surface) !important;
+  color: var(--dm-text);
+}
+
+/* Search container: transparent on desktop, dark bg on mobile */
+html.dark .search-container {
+  background-color: transparent !important;
+}
+
+@media (max-width: 768px) {
+  html.dark .search-container {
+    background-color: var(--dm-surface) !important;
+  }
+}
+
+html.dark .btn-secondary {
+  background: var(--dm-surface-elevated) !important;
+}
+
+/* ── 1) Hide desktop toggle on mobile ────── */
+@media (max-width: 768px) {
+  .navbar-user-menu > .dark-mode-toggle {
+    display: none;
+  }
+}
+
+/* ── 2) Dark-themed buttons: dark text on light bg ── */
+/* Buttons with background-color: var(--primary-color-darker) that originally had color: white */
+html.dark #discounts-create-button,
+html.dark #create-discount-submit,
+html.dark .discount-status-badge,
+html.dark #image-crop-save,
+html.dark .sold-out-badge,
+html.dark .login-form button,
+html.dark .register-button,
+html.dark #add-to-cart-button p,
+html.dark .write-review-button,
+html.dark .write-review-button *,
+html.dark #write-review-submit-button,
+html.dark #checkout-button,
+html.dark #checkout-button *,
+html.dark .contact-us-submit,
+html.dark #customer-account-details-save,
+html.dark #vendor-account-details-save,
+html.dark #store-details-save,
+html.dark #vendor-order-confirm-shipment-button,
+html.dark #order-general-action-reject-button,
+html.dark .change-password-btn,
+html.dark .purchase-complete-primary,
+html.dark #catalog-create-submit-button,
+html.dark .btn-primary,
+html.dark .toggle-btn.active,
+html.dark .newest-prev-button,
+html.dark .newest-next-button {
+  color: hsl(0, 0%, 10%) !important;
+}
+
+/* Outline/white-themed buttons: keep dark text for contrast */
+html.dark #view-all-results-button:hover,
+html.dark .newest-items-left button:hover,
+html.dark .mobile-menu-view-more:hover,
+html.dark #create-discount-cancel:hover,
+html.dark #write-review-cancel-button:hover,
+html.dark #catalog-create-cancel-button:hover,
+html.dark .purchase-complete-secondary:hover,
+html.dark #cart-shop-now-button:hover,
+html.dark #continue-shopping-button:hover,
+html.dark .view-all-reviews-button:hover,
+html.dark .order-card-view-details-button:hover,
+html.dark #add-to-wishlist-button:not(:disabled):hover *  {
+  color: var(--dm-surface) !important;
+}
+
+/* ── 3) Store search icon bg fix ────────── */
+html.dark .store-search-product-container svg {
+  background: transparent !important;
+}
+
+html.dark .store-search-product-container input {
+  background: transparent;
+}
+
+html.dark .store-search-product-container {
+  border-bottom-color: var(--dm-border);
+}
+
+/* ── 4) Notifications unread color ────────── */
+html.dark .notification-unread {
+  background-color: hsl(232, 20%, 18%);
+}
+
+html.dark .notification-unread:hover {
+  background-color: hsl(232, 20%, 22%);
+}
+
+html.dark .notification-item:hover {
+  background: var(--dm-surface-elevated);
+}
+
+html.dark .notification-icon {
+  background-color: var(--dm-surface-elevated);
+}
+
+html.dark .notifications-container {
+  background-color: var(--dm-surface) !important;
+}
+
+html.dark .notifications-header {
+  border-bottom-color: var(--dm-border);
+}
+
+/* ── 5) Search modal: remove visible corners ── */
+html.dark .search-wrapper > input {
+  background-color: var(--dm-surface);
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.5);
+}
+
+html.dark .search-wrapper > input:hover,
+html.dark .search-wrapper > input:focus {
+  outline-color: var(--dm-border);
+}
+
+html.dark .search-wrapper > input:focus,
+html.dark .search-wrapper > input:active {
+  outline-color: var(--dm-text-muted);
+}
+
+html.dark .search-results {
+  background-color: var(--dm-surface) !important;
+  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.5);
+}
+
+/* ── 6) Homepage big-brand-card: lower opacity ── */
+html.dark .big-brand-card {
+  opacity: 0.7;
+}
+
+html.dark .brand-carousel-slide:first-child img {
+  opacity: 0.7;
+}
+
+/* ── Small brand card logos: invert to white ── */
+html.dark #small-brand-card-1 img,
+html.dark #small-brand-card-2 img,
+html.dark #small-brand-card-3 img,
+html.dark #small-brand-card-4 img {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+/* Mobile: invert logo slides (all except the first photo slide) */
+html.dark .brand-carousel-slide:not(:first-child) img {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+/* ── Global image opacity in dark mode ──── */
+html.dark img {
+  opacity: 0.75;
+}
+
+/* Exclude UI icons from opacity reduction */
+html.dark .dark-mode-toggle img,
+html.dark .site-logo img {
+  opacity: 1;
+}
+
+/* ── 7) MUI Accordion white bg fix (order pages) ── */
+html.dark .MuiAccordion-root,
+html.dark .MuiPaper-root {
+  background-color: var(--dm-surface) !important;
+  color: var(--dm-text) !important;
+  box-shadow: none !important;
+}
+
+html.dark .MuiAccordionSummary-root {
+  color: var(--dm-text) !important;
+}
+
+html.dark .MuiAccordionDetails-root {
+  color: var(--dm-text) !important;
+}
+
+html.dark .MuiAccordion-root::before {
+  background-color: var(--dm-border) !important;
+}
+
+/* ── 8) Discount modal search bar bg fix ── */
+html.dark .discount-modal-search {
+  border-bottom-color: var(--dm-border);
+}
+
+html.dark .discount-modal-search input {
+  background: transparent;
+}
+
+html.dark .discount-modal {
+  background: var(--dm-surface) !important;
+}
+
+/* ── 9) White-themed buttons: transparent bg + hover fix ── */
+html.dark #image-crop-cancel,
+html.dark #create-discount-cancel,
+html.dark #view-all-results-button,
+html.dark .newest-items-left button,
+html.dark .order-card-view-details-button,
+html.dark #cart-shop-now-button,
+html.dark #continue-shopping-button,
+html.dark .view-all-reviews-button,
+html.dark .purchase-complete-secondary,
+html.dark #write-review-cancel-button,
+html.dark #catalog-create-cancel-button {
+  background: transparent !important;
+  border-color: var(--dm-text);
+  color: var(--dm-text) !important;
+}
+
+html.dark #image-crop-cancel:hover,
+html.dark #create-discount-cancel:hover,
+html.dark #view-all-results-button:hover,
+html.dark .newest-items-left button:hover,
+html.dark .order-card-view-details-button:hover,
+html.dark #cart-shop-now-button:hover,
+html.dark #continue-shopping-button:hover,
+html.dark .view-all-reviews-button:hover,
+html.dark .purchase-complete-secondary:hover,
+html.dark #write-review-cancel-button:hover,
+html.dark #catalog-create-cancel-button:hover {
+  background-color: var(--dm-text) !important;
+  color: var(--dm-surface) !important;
+}
+
+html.dark .register-selection-button-group > * {
+  background: transparent !important;
+}

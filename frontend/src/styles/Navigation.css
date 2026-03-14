@@ -191,6 +191,7 @@
   flex-direction: column;
   gap: 0;
   font-size: 16px;
+  flex: 1;
 }
 
 .mobile-menu-links > * {
@@ -201,6 +202,12 @@
 
 .mobile-menu-links > *:hover {
   color: var(--primary-color);
+}
+
+/* Bottom area for dark mode toggle */
+.mobile-menu-bottom {
+  margin-top: auto;
+  padding-top: 16px;
 }
 
 /* Mobile menu search */

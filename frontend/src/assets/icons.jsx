@@ -54,7 +54,9 @@ import {
   mdiMenu,
   mdiChevronDown,
   mdiCheckboxMarkedOutline,
-  mdiCheckboxBlankOutline
+  mdiCheckboxBlankOutline,
+  mdiWhiteBalanceSunny,
+  mdiMoonWaningCrescent,
 } from "@mdi/js";
 
 const BellIcon = ({ size = 1 }) => <Icon path={mdiBellOutline} size={size} />;

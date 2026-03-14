@@ -12,6 +12,7 @@ import {
   useLocation,
 } from "react-router-dom";
 import { AuthProvider, useAuth } from "./AuthContext";
+import { ThemeProvider } from "./ThemeContext";
 import Navigation from "./components/Navigation";
 import Register from "./components/auth/Register";
 import Login from "./components/auth/Login";
@@ -19,6 +20,7 @@ import Profile from "./components/auth/Profile";
 import PrivateRoute from "./components/PrivateRoute";
 import Logout from "./components/auth/Logout";
 import "./App.css";
+import "./styles/DarkMode.css";
 import { wishlist, vendor } from "./api";
 
 // Product pages
@@ -135,9 +137,11 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <ThemeProvider>
+        <AuthProvider>
+          <AppContent />
+        </AuthProvider>
+      </ThemeProvider>
     </Router>
   );
 }

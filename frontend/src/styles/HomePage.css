@@ -91,16 +91,22 @@
   transform: scale(1.1);
 }
 
-#small-brand-card-2 img {
+#small-brand-card-1 img {
   object-fit: contain;
   width: 80%;
   height: 80%;
 }
 
+#small-brand-card-2 img {
+  object-fit: contain;
+  width: 55%;
+  height: 55%;
+}
+
 #small-brand-card-3 img {
   object-fit: contain;
-  width: 80%;
-  height: 80%;
+  width: 70%;
+  height: 70%;
 }
 
 #small-brand-card-4 img {

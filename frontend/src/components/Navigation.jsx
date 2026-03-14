@@ -32,6 +32,7 @@ import blank_pfp from "../assets/blank_pfp.png";
 import noImage from "../assets/no_image_available.jpg";
 import Notifications from "./modals/Notifications";
 import ModalBackdrop from "./common/ModalBackdrop";
+import DarkModeToggle from "./DarkModeToggle";
 
 export const Navigation = ({ setShowSearchModal }) => {
   const { isAuthenticated, user, logout, isVendor } = useAuth();
@@ -319,6 +320,7 @@ export const Navigation = ({ setShowSearchModal }) => {
                 <AccountIcon size={0.8} />
               )}
             </Link>
+            <DarkModeToggle />
           </div>
         </div>
         {/* Mega dropdown – rendered outside navbar-links to avoid transform stacking context */}
@@ -541,6 +543,9 @@ export const Navigation = ({ setShowSearchModal }) => {
             <Link to="/contact-us" className="mobile-menu-plain-link" onClick={() => setShowMobileMenu(false)}>
               Contact Us
             </Link>
+            <div className="mobile-menu-bottom">
+              <DarkModeToggle />
+            </div>
           </nav>
         )}
       </div>
