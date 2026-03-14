@@ -55,6 +55,7 @@ import Wishlist from "./components/auth/customer/Wishlist";
 import PurchaseComplete from "./components/cart/PurchaseComplete";
 import AllCategories from "./components/products/AllCategories";
 import AllBrands from "./components/products/AllBrands";
+import ContactUs from "./components/ContactUs";
 
 const AppContent = () => {
   const { isAuthenticated, user } = useAuth();
@@ -121,6 +122,7 @@ const AppContent = () => {
           <Route path="/purchase-complete" element={<PurchaseComplete />} />
           <Route path="/all-categories" element={<AllCategories />} />
           <Route path="/all-brands" element={<AllBrands />} />
+          <Route path="/contact-us" element={<ContactUs />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </div>

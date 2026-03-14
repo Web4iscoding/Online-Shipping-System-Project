@@ -10,6 +10,7 @@ import Order from "../customer/Order";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
 import SuccessWindow from "../../windows/SuccessWindow";
+import blank_pfp from "../../../assets/blank_pfp.png";
 
 const OrderItem = ({ orderItem }) => {
   return (
@@ -127,7 +128,7 @@ const CustomerOrderDetails = () => {
             <div className="customer-order-vendor-profile">
               <img
                 className="customer-order-vendor-avatar"
-                src={`${API_BASE}/${orderData?.vendor_profileImage}` || noImage}
+                src={orderData?.vendor_profileImage ? `${API_BASE}/${orderData?.vendor_profileImage}` : blank_pfp}
                 alt="Vendor Avatar"
               />
               <p className="customer-order-vendor-store-name">

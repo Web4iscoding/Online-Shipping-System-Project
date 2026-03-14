@@ -10,6 +10,7 @@ import Order from "../customer/Order";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
 import OrderGeneralActionModal from "../../modals/OrderGeneralActionModal";
+import blank_pfp from "../../../assets/blank_pfp.png";
 
 const OrderItem = ({ orderItem }) => {
   return (
@@ -183,8 +184,9 @@ const VendorOrderDetails = () => {
               <img
                 className="vendor-order-customer-avatar"
                 src={
-                  `${API_BASE}/media/${orderData?.customer_profileImage}` ||
-                  noImage
+                  orderData?.customer_profileImage
+                    ? `${API_BASE}/media/${orderData?.customer_profileImage}`
+                    : blank_pfp
                 }
                 alt="Customer Avatar"
               />

@@ -448,6 +448,11 @@ class OrderViewSet(viewsets.ViewSet):
         customer = get_object_or_404(Customer, user=request.user)
         cart_items = CartItem.objects.filter(customerID=customer).select_related('productID__storeID__vendorID')
         
+        # Filter by selected product IDs if provided
+        product_ids = request.data.get('product_ids')
+        if product_ids:
+            cart_items = cart_items.filter(productID__productID__in=product_ids)
+        
         if not cart_items.exists():
             return Response({'error': 'Cart is empty'}, status=status.HTTP_400_BAD_REQUEST)
         

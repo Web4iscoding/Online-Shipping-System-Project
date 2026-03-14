@@ -54,8 +54,14 @@
 }
 
 .product-list-card-title {
-  padding: 8px 0;
+  padding: 8px 0 0;
   text-align: center;
+}
+
+.product-list-card-price {
+  text-align: center;
+  color: var(--primary-color);
+  font-size: 14px;
 }
 
 .product-list {
@@ -162,6 +168,10 @@
   }
 
   .product-list-card-title {
+    font-size: 12px;
+  }
+
+  .product-list-card-price {
     font-size: 12px;
   }
 

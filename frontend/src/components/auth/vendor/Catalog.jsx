@@ -95,7 +95,16 @@ const Catalog = () => {
   useEffect(() => {
     async function performFetch() {
       const products = await vendorAPI.myProducts(query);
-      setProducts(products);
+
+      // Client-side filter for byID:{id} syntax
+      const byIdMatch = query.trim().match(/^byID:(\d+)$/i);
+      if (byIdMatch) {
+        const targetId = Number(byIdMatch[1]);
+        const allProducts = await vendorAPI.myProducts("");
+        setProducts(allProducts.filter((p) => p.productID === targetId));
+      } else {
+        setProducts(products);
+      }
     }
 
     performFetch();

@@ -26,6 +26,7 @@ const ProductCard = ({
   productID = "",
   thumbnailURL,
   productName = "Lorem Ipsum Dolor Sit Amet",
+  productPrice,
   quantity,
 }) => {
   const navigate = useNavigate();
@@ -41,6 +42,9 @@ const ProductCard = ({
         <img className="product-list-card-image" src={thumbnailURL}></img>
       </button>
       <p className="product-list-card-title">{productName}</p>
+      {productPrice !== undefined && (
+        <p className="product-list-card-price">${Number(productPrice).toFixed(2)}</p>
+      )}
     </div>
   );
 };
@@ -222,6 +226,7 @@ const Store = () => {
                   : noImage
               }
               productName={product.productName}
+              productPrice={product.discounted_price ?? product.price}
               quantity={product.quantity}
             />
           ))}

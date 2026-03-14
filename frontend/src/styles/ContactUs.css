@@ -1,0 +1,178 @@
+.contact-us-container {
+  max-width: var(--max-width);
+  margin: 64px auto;
+  padding: 0 var(--desktop-padding);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 32px;
+  min-height: 300px;
+}
+
+.contact-us-container h1 {
+  font-weight: 400;
+}
+
+.contact-us-heading-wrapper {
+  position: relative;
+}
+
+.contact-us-heading {
+  font-weight: 400;
+  font-size: 24px;
+  color: var(--primary-color-darker);
+  border-top: 1px solid var(--primary-color-lighter);
+}
+
+.contact-us-form {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  width: 100%;
+  max-width: 500px;
+}
+
+.contact-us-name-row {
+  display: flex;
+  gap: 16px;
+}
+
+.contact-us-name-row > .contact-us-field {
+  flex: 1;
+}
+
+.contact-us-field {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.contact-us-field label {
+  font-size: 14px;
+}
+
+.contact-us-field input,
+.contact-us-field textarea {
+  padding: 8px;
+  font-size: 14px;
+  font-family: inherit;
+  border: 1px solid var(--primary-color-light);
+  appearance: none;
+  resize: vertical;
+}
+
+.contact-us-field input:focus,
+.contact-us-field textarea:focus {
+  outline: none;
+  border-color: var(--primary-color);
+}
+
+.contact-us-submit {
+  appearance: none;
+  font: inherit;
+  font-size: 14px;
+  padding: 12px;
+  background-color: var(--primary-color-darker);
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.contact-us-submit:hover {
+  opacity: 0.9;
+}
+
+.contact-us-submit:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.contact-us-error {
+  color: var(--error-color, #e53935);
+  font-size: 14px;
+}
+
+.contact-us-sent-message {
+  font-size: 16px;
+  color: var(--primary-color-darker);
+}
+
+/* ── Dino animation ─────────────────────────── */
+.contact-us-dino {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  overflow: hidden;
+  bottom: 100%;
+  right: 0;
+  pointer-events: none;
+  transition: transform 0.35s ease;
+  color: var(--primary-color-darker);
+}
+
+.contact-us-dino svg {
+  display: block;
+  transform: translateY(100%);
+}
+
+/* ── Phase: rising ── */
+.contact-us-dino.pop-rising svg {
+  animation: pop-rise 0.4s ease forwards;
+}
+
+/* ── Phase: peeking ── */
+.contact-us-dino.pop-peeking svg {
+  transform: translateY(0);
+}
+
+.contact-us-dino.pop-peeking {
+  animation: peek-look 1.4s ease forwards;
+}
+
+/* ── Phase: walking ── */
+.contact-us-dino.pop-walking {
+  transition: none;
+}
+
+.contact-us-dino.pop-walking svg {
+  transform: translateY(0);
+  animation: walk-bob 0.5s ease-in-out infinite;
+}
+
+/* ── Sent state animations ─────────────────────────── */
+.cu-fade-in {
+  opacity: 0;
+  transition: opacity 0.6s ease;
+}
+
+.cu-fade-in.visible {
+  opacity: 1;
+}
+
+.cu-slide-up {
+  opacity: 0;
+  transform: translateY(20px);
+  transition: opacity 0.6s ease, transform 0.6s ease;
+}
+
+.cu-slide-up.visible {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+/* ── Responsive ─────────────────────────── */
+@media (max-width: 768px) {
+  .contact-us-container {
+    padding: 0 16px;
+    margin: 48px auto;
+  }
+
+  .contact-us-heading {
+    font-size: 20px;
+    text-align: center;
+  }
+
+  .contact-us-name-row {
+    flex-direction: column;
+  }
+}

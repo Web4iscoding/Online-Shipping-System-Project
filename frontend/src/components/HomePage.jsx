@@ -17,7 +17,7 @@ import { products as productsApi, API_BASE } from "../api";
 import noImage from "../assets/no_image_available.jpg";
 import useSwipe from "../hooks/useSwipe";
 
-const ProductCard = ({ productID, thumbnailURL, productName, quantity }) => {
+const ProductCard = ({ productID, thumbnailURL, productName, productPrice, quantity }) => {
   const navigate = useNavigate();
   const soldOut = quantity !== undefined && quantity <= 0;
   return (
@@ -30,11 +30,10 @@ const ProductCard = ({ productID, thumbnailURL, productName, quantity }) => {
         <img className="product-card-image" src={thumbnailURL} alt={productName}></img>
       </button>
       <p className="product-card-title">{productName}</p>
+        <p className="product-card-price">${Number(productPrice).toFixed(2)}</p>
     </div>
   );
 };
-
-const VISIBLE_COUNT = 8;
 
 const HomePage = () => {
   const navigate = useNavigate();
@@ -42,7 +41,25 @@ const HomePage = () => {
   const [trackOffset, setTrackOffset] = useState(0);
   const [brandSlideIndex, setBrandSlideIndex] = useState(0);
   const [brandResetKey, setBrandResetKey] = useState(0);
+  const [maxOffset, setMaxOffset] = useState(0);
   const trackRef = useRef(null);
+  const listRef = useRef(null);
+
+  // Recompute max scrollable offset when container resizes or products change
+  useEffect(() => {
+    const el = listRef.current;
+    if (!el) return;
+    const compute = () => {
+      const cardWidth =
+        parseFloat(getComputedStyle(el).getPropertyValue("--card-slide-width")) || 216;
+      const visible = Math.max(1, Math.floor(el.clientWidth / cardWidth));
+      setMaxOffset(Math.max(newestProducts.length - visible, 0));
+    };
+    compute();
+    const ro = new ResizeObserver(compute);
+    ro.observe(el);
+    return () => ro.disconnect();
+  }, [newestProducts.length]);
 
   // JS-driven marquee: rAF loop scrolls track left, resets at half-width
   useEffect(() => {
@@ -103,7 +120,11 @@ const HomePage = () => {
     });
   }, []);
 
-  const maxOffset = Math.max(newestProducts.length - VISIBLE_COUNT, 0);
+  // Clamp offset when maxOffset shrinks (e.g. resize)
+  useEffect(() => {
+    setTrackOffset((prev) => Math.min(prev, maxOffset));
+  }, [maxOffset]);
+
   const canGoPrev = trackOffset > 0;
   const canGoNext = trackOffset < maxOffset;
 
@@ -256,7 +277,7 @@ const HomePage = () => {
             <p>Items Waiting To Be Discovered</p>
             <button onClick={() => navigate("/product-list/all-items")}>SHOP NOW</button>
           </div>
-          <div className="newest-items-list">
+          <div className="newest-items-list" ref={listRef}>
             {canGoPrev && (
               <button
                 className="newest-prev-button"
@@ -289,6 +310,7 @@ const HomePage = () => {
                       : noImage
                   }
                   productName={product.productName}
+                  productPrice={product.discounted_price ?? product.price}
                   quantity={product.quantity}
                 />
               ))}

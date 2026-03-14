@@ -20,12 +20,18 @@ const PurchaseComplete = () => {
   const hasPoppedRef = useRef(false);
 
   const randIdle = () => Math.random() * (60000 - 10000) + 10000;
+// const randIdle = () => Math.random() * (2000 - 1000) + 1000;
   const randWalk = () => Math.random() * (60000 - 20000) + 20000;
   const randBetween = (min, max) => Math.random() * (max - min) + min;
 
   useEffect(() => {
     const timer = setTimeout(() => setLoading(false), 1500);
     return () => clearTimeout(timer);
+  }, []);
+
+  // Refresh cart count in nav bar after purchase
+  useEffect(() => {
+    window.dispatchEvent(new Event('cart-updated'));
   }, []);
 
   useEffect(() => {
@@ -200,7 +206,7 @@ const PurchaseComplete = () => {
 
   return (
     <div className="purchase-complete-container">
-      <h2 className={`pc-fade-in${showHeading ? " visible" : ""}`}><SuccessTickIcon />Purchase Complete</h2>
+      <h2 className={`pc-fade-in${showHeading ? " visible" : ""}`}><SuccessTickIcon />Purchase Completed</h2>
       <div className={`purchase-complete-buttons pc-slide-up${showButtons ? " visible" : ""}`}>
         <button
           ref={buttonRef}

@@ -77,6 +77,11 @@ const SearchModal = ({ onClose }) => {
                   <p className="product-list-card-title">
                     {result?.productName}
                   </p>
+                  {result?.price !== undefined && (
+                    <p className="product-list-card-price">
+                      ${Number(result?.discounted_price ?? result?.price).toFixed(2)}
+                    </p>
+                  )}
                 </div>
               );
             })}

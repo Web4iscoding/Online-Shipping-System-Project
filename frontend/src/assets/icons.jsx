@@ -52,7 +52,9 @@ import {
   mdiCashRefund,
   mdiClipboardArrowDownOutline,
   mdiMenu,
-  mdiChevronDown
+  mdiChevronDown,
+  mdiCheckboxMarkedOutline,
+  mdiCheckboxBlankOutline
 } from "@mdi/js";
 
 const BellIcon = ({ size = 1 }) => <Icon path={mdiBellOutline} size={size} />;
@@ -230,6 +232,14 @@ const ChevronDownIcon = ({ size = 1, style, className }) => (
   <Icon path={mdiChevronDown} size={size} style={style} className={className} />
 );
 
+const CheckboxMarkedIcon = ({ size = 1 }) => (
+  <Icon path={mdiCheckboxMarkedOutline} size={size} />
+);
+
+const CheckboxBlankIcon = ({ size = 1 }) => (
+  <Icon path={mdiCheckboxBlankOutline} size={size} />
+);
+
 export {
   BellIcon,
   SearchIcon,
@@ -283,5 +293,7 @@ export {
   CashRefundIcon,
   ClipboardArrowDownOutlineIcon,
   MenuIcon,
-  ChevronDownIcon
+  ChevronDownIcon,
+  CheckboxMarkedIcon,
+  CheckboxBlankIcon
 };

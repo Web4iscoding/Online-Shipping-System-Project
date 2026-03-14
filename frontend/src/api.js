@@ -3,8 +3,9 @@
  * Handles all communication with the Django backend
  */
 
-// const API_BASE = "http://192.168.1.108:8000";
-const API_BASE = "http://172.20.10.2:8000";
+const API_BASE = "http://192.168.1.41:8000";
+// const API_BASE = "http://192.168.0.233:8000";
+// const API_BASE = "http://172.20.10.2:8000";
 // const API_BASE = "http://localhost:8000";
 const API_URL = `${API_BASE}/api`;
 
@@ -274,6 +275,7 @@ export const orders = {
     shippingAddress1,
     shippingAddress2,
     shippingAddress3,
+    productIds = null,
   ) =>
     apiCall("/orders/", {
       method: "POST",
@@ -284,6 +286,7 @@ export const orders = {
         shippingAddress1,
         shippingAddress2,
         shippingAddress3,
+        ...(productIds ? { product_ids: productIds } : {}),
       }),
     }),
 

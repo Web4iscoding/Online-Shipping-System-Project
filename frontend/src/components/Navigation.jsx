@@ -432,6 +432,11 @@ export const Navigation = ({ setShowSearchModal }) => {
                   />
                 </button>
                 <p>{result.productName}</p>
+                {result.price !== undefined && (
+                  <p className="mobile-search-result-price">
+                    ${Number(result.discounted_price ?? result.price).toFixed(2)}
+                  </p>
+                )}
               </div>
             ))}
             <button

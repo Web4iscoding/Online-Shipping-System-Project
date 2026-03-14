@@ -1,5 +1,4 @@
 import "../../../styles/Wishlist.css";
-import "../../../styles/Cart.css";
 import { useEffect, useState } from "react";
 import { wishlist as wishlistAPI, API_BASE } from "../../../api";
 import { useNavigate } from "react-router-dom";
@@ -16,23 +15,27 @@ const WishlistItem = ({
   productImage,
   handleDelete,
 }) => {
+  const navigate = useNavigate();
   const hasDiscount = discountRate > 0;
 
   return (
-    <div className="cart-item">
+    <div
+      className="wishlist-item"
+      onClick={() => navigate(`/product/${productID}`)}
+    >
       <button
-        onClick={() => handleDelete(productID)}
-        id="cart-item-delete-button"
+        onClick={(e) => { e.stopPropagation(); handleDelete(productID); }}
+        className="wishlist-item-delete-button"
       >
         <TrashCanIcon />
       </button>
-      <h2 className="cart-item-title">{productName}</h2>
-      <div className="cart-item-info">
+      <h2 className="wishlist-item-title">{productName}</h2>
+      <div className="wishlist-item-info">
         <img src={productImage} alt={productName} />
         {hasDiscount ? (
-          <div className="cart-item-price-group">
+          <div className="wishlist-item-price-group">
             <h3>${Number(discountedPrice).toFixed(2)}</h3>
-            <span className="cart-item-price-original">${Number(productPrice).toFixed(2)}</span>
+            <span className="wishlist-item-price-original">${Number(productPrice).toFixed(2)}</span>
           </div>
         ) : (
           <h3>${productPrice}</h3>
@@ -65,21 +68,21 @@ const Wishlist = () => {
       }
 
     return (
-        <div className="cart-container">
-      <div className="cart-header">
-        <h2 className="cart-title">Wishlist</h2>
-        <p className="cart-items-count">
+        <div className="wishlist-container">
+      <div className="wishlist-header">
+        <h2 className="wishlist-title">Wishlist</h2>
+        <p className="wishlist-items-count">
           {numberOfItems} {numberOfItems === 1 ? "item" : "items"}
         </p>
       </div>
       {numberOfItems === 0 && (
-        <div className="no-cart-item-container">
+        <div className="wishlist-empty">
           <HeartPlusOutlineIcon size={1.3} />
           <p>Add items to your wishlist</p>
         </div>
       )}
       {numberOfItems > 0 && (
-        <div className="cart-item-container">
+        <div className="wishlist-item-list">
           {wishlistItems?.map((item, index) => (
             <WishlistItem
               key={index}

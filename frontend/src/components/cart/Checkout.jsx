@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { LeftArrowIcon } from "../../assets/icons";
 import { cart as cartAPI } from "../../api";
 import "../../styles/Checkout.css";
@@ -8,7 +8,9 @@ import { auth as authAPI, orders as ordersAPI } from "../../api";
 
 const Checkout = () => {
   const navigate = useNavigate();
+  const location = useLocation();
   const { user } = useAuth();
+  const selectedProductIds = location.state?.selectedProductIds || null;
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -49,6 +51,7 @@ const Checkout = () => {
       formData.shippingAddress1,
       formData.shippingAddress2,
       formData.shippingAddress3,
+      selectedProductIds,
     );
     console.log(response);
 

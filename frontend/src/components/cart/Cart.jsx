@@ -4,6 +4,8 @@ import {
   MinusIcon,
   CreditCardIcon,
   CartArrowDownIcon,
+  CheckboxMarkedIcon,
+  CheckboxBlankIcon,
 } from "../../assets/icons";
 import noImage from "../../assets/no_image_available.jpg";
 import "../../styles/Cart.css";
@@ -23,19 +25,34 @@ const CartItem = ({
   productImage,
   handleUpdateQuantity,
   handleDelete,
+  isSelected,
+  onToggleSelect,
 }) => {
+  const navigate = useNavigate();
   const isDecreaseDisabled = ProductCartQuantity <= 1;
   const isIncreaseDisabled = ProductCartQuantity >= productStock;
   const hasDiscount = discountRate > 0;
 
   return (
-    <div className="cart-item">
-      <button
-        onClick={() => handleDelete(productID)}
-        id="cart-item-delete-button"
-      >
-        <TrashCanIcon />
-      </button>
+    <div
+      className={`cart-item ${isSelected ? "cart-item-selected" : ""}`}
+      onClick={() => navigate(`/product/${productID}`)}
+      style={{ cursor: "pointer" }}
+    >
+      <div className="cart-item-action-buttons">
+        <button
+          onClick={(e) => { e.stopPropagation(); handleDelete(productID); }}
+          id="cart-item-delete-button"
+        >
+          <TrashCanIcon />
+        </button>
+        <button
+          onClick={(e) => { e.stopPropagation(); onToggleSelect(productID); }}
+          id="cart-item-select-button"
+        >
+          {isSelected ? <CheckboxMarkedIcon /> : <CheckboxBlankIcon />}
+        </button>
+      </div>
 
       
 
@@ -51,7 +68,7 @@ const CartItem = ({
           <h3>${productPrice}</h3>
         )}
       </div>
-      <div className="cart-item-quantity-button-group">
+      <div className="cart-item-quantity-button-group" onClick={(e) => e.stopPropagation()}>
         <button
           onClick={() => {
             if (!isDecreaseDisabled) {
@@ -86,6 +103,7 @@ const Cart = () => {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [numberOfItems, setNumberOfItems] = useState(0);
+  const [selectedItems, setSelectedItems] = useState(new Set());
   const { user } = useAuth();
   const navigate = useNavigate();
 
@@ -97,9 +115,35 @@ const Cart = () => {
       setCartItems(cartData.items);
       setTotalPrice(cartData.total);
       setNumberOfItems(cartData.item_count);
+      // Select all items by default
+      setSelectedItems(new Set(cartData.items.map((item) => item.product.productID)));
     }
     performFetch();
   }, []);
+
+  const handleToggleSelect = (productID) => {
+    setSelectedItems((prev) => {
+      const next = new Set(prev);
+      if (next.has(productID)) {
+        next.delete(productID);
+      } else {
+        next.add(productID);
+      }
+      return next;
+    });
+  };
+
+  // Compute total for selected items only
+  const selectedTotal = cartItems
+    .filter((item) => selectedItems.has(item.product.productID))
+    .reduce((sum, item) => {
+      const price = item.product.discount_rate > 0
+        ? Number(item.product.discounted_price)
+        : Number(item.product.price);
+      return sum + price * item.quantity;
+    }, 0);
+
+  const selectedCount = selectedItems.size;
 
   // const handleCheckout = async () => {
   //   const response = await OrdersAPI.create(
@@ -177,14 +221,16 @@ const Cart = () => {
               }
               handleUpdateQuantity={handleUpdateQuantity}
               handleDelete={handleDelete}
+              isSelected={selectedItems.has(item.product.productID)}
+              onToggleSelect={handleToggleSelect}
             />
           ))}
         </div>
       )}
       {numberOfItems > 0 && (
         <div className="cart-total-container">
-          <p className="cart-total-title">Total</p>
-          <p className="cart-total">${Number(totalPrice).toFixed(2)}</p>
+          <p className="cart-total-title">Total ({selectedCount} selected)</p>
+          <p className="cart-total">${Number(selectedTotal).toFixed(2)}</p>
         </div>
       )}
       {numberOfItems === 0 && (
@@ -195,11 +241,11 @@ const Cart = () => {
           SHOP NOW
         </button>
       )}
-      {numberOfItems > 0 && (
+      {(numberOfItems > 0 && selectedCount > 0) && (
         <button
           id="checkout-button"
-          onClick={() => navigate("/checkout")}
-          disabled={cartItems.length === 0}
+          onClick={() => navigate("/checkout", { state: { selectedProductIds: [...selectedItems] } })}
+          disabled={selectedCount === 0}
         >
           <CreditCardIcon />
           <p>Proceed to Checkout</p>
