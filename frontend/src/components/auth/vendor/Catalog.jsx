@@ -92,29 +92,25 @@ const Catalog = () => {
     }
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    async function performFetch() {
-      const products = await vendorAPI.myProducts(query);
-
-      // Client-side filter for byID:{id} syntax
-      const byIdMatch = query.trim().match(/^byID:(\d+)$/i);
-      if (byIdMatch) {
-        const targetId = Number(byIdMatch[1]);
-        const allProducts = await vendorAPI.myProducts("");
-        setProducts(allProducts.filter((p) => p.productID === targetId));
-      } else {
-        setProducts(products);
-      }
+  const fetchProducts = async (searchQuery) => {
+    const byIdMatch = searchQuery.trim().match(/^byID:(\d+)$/i);
+    if (byIdMatch) {
+      const targetId = Number(byIdMatch[1]);
+      const allProducts = await vendorAPI.myProducts("");
+      setProducts(allProducts.filter((p) => p.productID === targetId));
+    } else {
+      const products = await vendorAPI.myProducts(searchQuery);
+      setProducts(products);
     }
+  };
 
-    performFetch();
+  useEffect(() => {
+    fetchProducts(query);
   }, [query]);
 
   const handleEdit = async (productID, fieldsToBeUpdated) => {
     await vendorAPI.UpdateProduct(productID, fieldsToBeUpdated);
-
-    const products = await vendorAPI.myProducts(query);
-    setProducts(products);
+    await fetchProducts(query);
   };
 
   const handleClickCatalogCard = (productID) => {
@@ -122,12 +118,7 @@ const Catalog = () => {
   };
 
   const submitRerender = () => {
-    async function performFetch() {
-      const products = await vendorAPI.myProducts(query);
-      setProducts(products);
-    }
-
-    performFetch();
+    fetchProducts(query);
   };
 
   return (
@@ -159,7 +150,7 @@ const Catalog = () => {
           />
           <input
             type="text"
-            placeholder="Search products..."
+            placeholder="Search products... (e.g. 'byID:123')"
             value={query}
             onChange={(e) => setQuery(e.target.value)}
           ></input>

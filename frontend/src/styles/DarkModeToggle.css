@@ -34,7 +34,7 @@
 
 .dark-mode-toggle.dark .dark-mode-toggle-thumb {
   transform: translateX(24px);
-  background-color: hsl(0, 0%, 45%);
+  background-color: hsl(0, 0%, 50%);
 }
 
 .dark-mode-toggle-icon {

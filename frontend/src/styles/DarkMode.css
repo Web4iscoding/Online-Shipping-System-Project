@@ -379,6 +379,11 @@ html.dark [style*="background-color: white"] {
   background: var(--dm-surface) !important;
 }
 
+/* ── Catalog add button ─────────────────── */
+html.dark .catalog-add {
+  background-color: var(--dm-surface-elevated);
+}
+
 /* ── Specific white bg elements ─────────── */
 html.dark .catalog-create-container,
 html.dark .newest-items-left button,
