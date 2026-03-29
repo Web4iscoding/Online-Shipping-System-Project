@@ -3,10 +3,10 @@
  * Handles all communication with the Django backend
  */
 
-const API_BASE = "http://192.168.1.41:8000";
+// const API_BASE = "http://192.168.1.41:8000";
 // const API_BASE = "http://192.168.0.233:8000";
 // const API_BASE = "http://172.20.10.2:8000";
-// const API_BASE = "http://localhost:8000";
+const API_BASE = "http://localhost:8000";
 const API_URL = `${API_BASE}/api`;
 
 /**
@@ -150,6 +150,12 @@ export const products = {
   detail: (productID) =>
     apiCall(`/products/${productID}/`, {
       method: "GET",
+    }),
+
+  trackView: (productID, source = "browse", searchQuery = "") =>
+    apiCall(`/products/${productID}/track_view/`, {
+      method: "POST",
+      body: JSON.stringify({ source, search_query: searchQuery }),
     }),
 
   byBrand: (brandID, page = 1) =>
@@ -556,6 +562,11 @@ export const vendor = {
   deletePromotion: (promotionID) =>
     apiCall(`/vendor/delete_promotion/?promotion_id=${promotionID}`, {
       method: "DELETE",
+    }),
+
+  analytics: (days = 30) =>
+    apiCall(`/vendor/analytics/?days=${days}`, {
+      method: "GET",
     }),
 };
 

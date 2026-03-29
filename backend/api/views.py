@@ -11,7 +11,7 @@ from decimal import Decimal
 from .models import (
     Customer, Vendor, Store, StorePhoto, Product, ProductMedia, Category, Brand,
     CartItem, Order, OrderItem, WishlistItem, Promotion, Review, ReviewMedia, Notification,
-    DeviceToken
+    DeviceToken, SearchQuery, ProductView
 )
 from .serializers import (
     CustomerSerializer, VendorSerializer, CustomerRegisterSerializer,
@@ -195,10 +195,39 @@ class ProductViewSet(viewsets.ReadOnlyModelViewSet):
     ordering_fields = ['price', 'createdTime']
     ordering = ['-createdTime']
 
+    @action(detail=True, methods=['post'])
+    def track_view(self, request, pk=None):
+        """Track a product view. Separate from retrieve to avoid double-counting."""
+        product = self.get_object()
+        source = request.data.get('source', 'browse')
+        search_query = request.data.get('search_query', '')
+        if source not in ('search', 'browse', 'direct'):
+            source = 'browse'
+        ProductView.objects.create(
+            product=product,
+            user=request.user if request.user.is_authenticated else None,
+            source=source,
+            searchQuery=search_query,
+        )
+        return Response({'status': 'ok'})
+
     def get_serializer_class(self):
         if self.action == 'retrieve':
             return ProductDetailSerializer
         return ProductListSerializer
+
+    def list(self, request, *args, **kwargs):
+        """Override list to track search queries."""
+        response = super().list(request, *args, **kwargs)
+        search_term = request.query_params.get('search', '').strip()
+        if search_term:
+            result_count = response.data.get('count', 0) if isinstance(response.data, dict) else len(response.data)
+            SearchQuery.objects.create(
+                query=search_term,
+                user=request.user if request.user.is_authenticated else None,
+                resultCount=result_count,
+            )
+        return response
 
     def retrieve(self, request, *args, **kwargs):
         """Override retrieve to add has_purchased boolean."""
@@ -1454,6 +1483,153 @@ class VendorStoreViewSet(viewsets.ViewSet):
             {'message': 'Promotion deleted successfully'},
             status=status.HTTP_204_NO_CONTENT
         )
+
+    @action(detail=False, methods=['GET'])
+    def analytics(self, request):
+        """Get analytics data for the vendor's store."""
+        from django.db.models import Count, Sum, F
+        from django.db.models.functions import TruncDate
+        from collections import Counter
+
+        vendor = self.get_vendor(request)
+        store = get_object_or_404(Store, vendorID=vendor)
+
+        days = int(request.query_params.get('days', 30))
+        start_date = timezone.now() - timezone.timedelta(days=days)
+
+        store_products = Product.objects.filter(storeID=store)
+        product_ids = list(store_products.values_list('productID', flat=True))
+
+        # --- Top search queries leading to product views ---
+        search_views = ProductView.objects.filter(
+            product__in=product_ids,
+            timestamp__gte=start_date,
+            source='search',
+        ).exclude(searchQuery='')
+
+        query_counts = Counter(search_views.values_list('searchQuery', flat=True))
+        top_search_queries = [
+            {'query': q, 'count': c}
+            for q, c in query_counts.most_common(10)
+        ]
+
+        # --- Product view trends by day ---
+        view_trends = (
+            ProductView.objects.filter(
+                product__in=product_ids,
+                timestamp__gte=start_date,
+            )
+            .annotate(date=TruncDate('timestamp'))
+            .values('date')
+            .annotate(count=Count('id'))
+            .order_by('date')
+        )
+        product_view_trends = [
+            {'date': str(entry['date']), 'views': entry['count']}
+            for entry in view_trends
+        ]
+
+        # --- Top viewed products ---
+        top_products_qs = (
+            ProductView.objects.filter(
+                product__in=product_ids,
+                timestamp__gte=start_date,
+            )
+            .values('product__productID', 'product__productName')
+            .annotate(views=Count('id'))
+            .order_by('-views')[:10]
+        )
+        top_products = [
+            {'productID': p['product__productID'], 'name': p['product__productName'], 'views': p['views']}
+            for p in top_products_qs
+        ]
+
+        # --- Revenue by day ---
+        orders = Order.objects.filter(
+            items__productID__storeID=store,
+            orderDate__gte=start_date,
+        ).distinct()
+
+        revenue_trends = (
+            orders
+            .annotate(date=TruncDate('orderDate'))
+            .values('date')
+            .annotate(revenue=Sum('totalAmount'), orders=Count('orderID'))
+            .order_by('date')
+        )
+        revenue_by_day = [
+            {'date': str(entry['date']), 'revenue': float(entry['revenue']), 'orders': entry['orders']}
+            for entry in revenue_trends
+        ]
+
+        # --- Category breakdown of views ---
+        category_views = (
+            ProductView.objects.filter(
+                product__in=product_ids,
+                timestamp__gte=start_date,
+            )
+            .values(name=F('product__category__categoryName'))
+            .annotate(views=Count('id'))
+            .order_by('-views')
+        )
+        category_breakdown = [
+            {'category': entry['name'] or 'Uncategorized', 'views': entry['views']}
+            for entry in category_views
+        ]
+
+        # --- Conversion data: views vs add-to-cart vs orders ---
+        total_views = ProductView.objects.filter(
+            product__in=product_ids,
+            timestamp__gte=start_date,
+        ).count()
+
+        total_cart_adds = CartItem.objects.filter(
+            productID__in=product_ids,
+            addedTime__gte=start_date,
+        ).count()
+
+        total_orders = OrderItem.objects.filter(
+            productID__in=product_ids,
+            orderID__orderDate__gte=start_date,
+        ).count()
+
+        # --- Overall summary ---
+        total_revenue = float(orders.aggregate(total=Sum('totalAmount'))['total'] or 0)
+        total_order_count = orders.count()
+
+        # --- Top wishlisted items ---
+        top_wishlisted_qs = (
+            WishlistItem.objects.filter(
+                productID__in=product_ids,
+            )
+            .values('productID__productID', 'productID__productName')
+            .annotate(wishlist_count=Count('wishlistItemID'))
+            .order_by('-wishlist_count')[:10]
+        )
+        top_wishlisted = [
+            {'productID': w['productID__productID'], 'name': w['productID__productName'], 'count': w['wishlist_count']}
+            for w in top_wishlisted_qs
+        ]
+
+        return Response({
+            'summary': {
+                'totalViews': total_views,
+                'totalOrders': total_order_count,
+                'totalRevenue': total_revenue,
+                'totalProducts': store_products.count(),
+            },
+            'topSearchQueries': top_search_queries,
+            'topWishlisted': top_wishlisted,
+            'productViewTrends': product_view_trends,
+            'topProducts': top_products,
+            'revenueByDay': revenue_by_day,
+            'categoryBreakdown': category_breakdown,
+            'conversionFunnel': {
+                'views': total_views,
+                'cartAdds': total_cart_adds,
+                'orders': total_orders,
+            },
+        })
 
 
 # Notification Views

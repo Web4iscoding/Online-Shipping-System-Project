@@ -639,3 +639,68 @@ html.dark #catalog-create-cancel-button:hover {
 html.dark .register-selection-button-group > * {
   background: transparent !important;
 }
+
+/* ── Analytics ──────────────────────────── */
+html.dark .analytics-summary-card,
+html.dark .analytics-chart-card {
+  background-color: var(--dm-surface);
+  border-color: var(--dm-border);
+}
+
+html.dark .analytics-period-select {
+  background-color: var(--dm-surface);
+  border-color: var(--dm-border);
+  color: var(--dm-text);
+}
+
+html.dark .analytics-period-select option {
+  background-color: var(--dm-surface);
+  color: var(--dm-text);
+}
+
+html.dark .analytics-summary-label {
+  color: var(--dm-text-muted);
+}
+
+html.dark .analytics-empty {
+  color: var(--dm-text-muted);
+}
+
+html.dark .MuiChartsAxis-tickLabel,
+html.dark .MuiChartsAxis-label {
+  fill: var(--dm-text) !important;
+}
+
+html.dark .MuiChartsLegend-label {
+  fill: var(--dm-text) !important;
+}
+
+html.dark .MuiChartsTooltip-root {
+  background-color: var(--dm-surface-elevated) !important;
+  border-color: var(--dm-border) !important;
+}
+
+html.dark .MuiChartsTooltip-root * {
+  color: var(--dm-text) !important;
+}
+
+html.dark .MuiChartsTooltip-paper,
+html.dark .MuiChartsTooltip-container,
+html.dark .MuiChartsTooltip-root .MuiPaper-root {
+  background-color: var(--dm-surface-elevated) !important;
+  border: 1px solid var(--dm-border) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4) !important;
+}
+
+html.dark .MuiChartsTooltip-table {
+  background-color: var(--dm-surface-elevated) !important;
+}
+
+html.dark .MuiChartsTooltip-cell {
+  color: var(--dm-text) !important;
+  border-color: var(--dm-border) !important;
+}
+
+html.dark .MuiChartsTooltip-mark {
+  border-color: var(--dm-border) !important;
+}

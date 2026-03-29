@@ -37,7 +37,8 @@ const VendorOrderDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const location = useLocation();
-  const backPath = location.state?.from || "/orders";
+  const isShipped = orderData?.status === "Shipped";
+  const backPath = isShipped ? "/shipped-orders" : (location.state?.from || "/orders");
   const showButton =
     orderData?.status === "Pending" || orderData?.status === "Holding";
   const pendingRefund = orderData?.refundRequest;
@@ -102,6 +103,10 @@ const VendorOrderDetails = () => {
               await handleDismissRefund();
             } else {
               await handleUpdateStatus(orderGeneralActionType);
+              if (orderGeneralActionType === "Shipped") {
+                navigate("/orders", { state: { shippedOrderId: id } });
+                return;
+              }
             }
             setShowOrderGeneralActionModal(false);
           }}

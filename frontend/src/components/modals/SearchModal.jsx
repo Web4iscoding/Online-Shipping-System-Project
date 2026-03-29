@@ -61,7 +61,7 @@ const SearchModal = ({ onClose }) => {
                   <button
                     className="product-list-card-image-container"
                     onClick={() => {
-                      navigate(`/product/${result?.productID}`);
+                      navigate(`/product/${result?.productID}`, { state: { source: "search", searchQuery: query } });
                       onClose();
                     }}
                   >

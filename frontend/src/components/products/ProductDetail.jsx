@@ -41,6 +41,16 @@ const ProductDetail = () => {
   const [currentReviewMedia, setCurrentReviewMedia] = useState(null);
   const [itemInWishlist, setItemInWishlist] = useState(false);
   const [wishlist, setWishlist] = useState([]);
+  const viewTrackedRef = useRef(new Set());
+
+  useEffect(() => {
+    if (!viewTrackedRef.current.has(id)) {
+      viewTrackedRef.current.add(id);
+      const source = location.state?.source || "browse";
+      const searchQuery = location.state?.searchQuery || "";
+      productAPI.trackView(id, source, searchQuery);
+    }
+  }, [id]);
 
   useEffect(() => {
     async function performFetch() {

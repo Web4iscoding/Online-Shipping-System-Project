@@ -57,6 +57,7 @@ import {
   mdiCheckboxBlankOutline,
   mdiWhiteBalanceSunny,
   mdiMoonWaningCrescent,
+  mdiChartBar
 } from "@mdi/js";
 
 const BellIcon = ({ size = 1 }) => <Icon path={mdiBellOutline} size={size} />;
@@ -242,6 +243,10 @@ const CheckboxBlankIcon = ({ size = 1 }) => (
   <Icon path={mdiCheckboxBlankOutline} size={size} />
 );
 
+const ChartBarIcon = ({ size = 1 }) => (
+  <Icon path={mdiChartBar} size={size} />
+);
+
 export {
   BellIcon,
   SearchIcon,
@@ -297,5 +302,6 @@ export {
   MenuIcon,
   ChevronDownIcon,
   CheckboxMarkedIcon,
-  CheckboxBlankIcon
+  CheckboxBlankIcon,
+  ChartBarIcon,
 };

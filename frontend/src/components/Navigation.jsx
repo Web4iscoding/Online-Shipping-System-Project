@@ -420,7 +420,7 @@ export const Navigation = ({ setShowSearchModal }) => {
               <div className="mobile-search-result-card" key={result.productID}>
                 <button
                   onClick={() => {
-                    navigate(`/product/${result.productID}`);
+                    navigate(`/product/${result.productID}`, { state: { source: "search", searchQuery: mobileSearchQuery } });
                     setShowMobileMenu(false);
                   }}
                 >

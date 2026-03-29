@@ -1,7 +1,7 @@
 import "../../../styles/Orders.css";
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../AuthContext";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, useLocation } from "react-router-dom";
 import { vendor as vendorAPI, API_BASE } from "../../../api";
 import {
   LeftArrowIcon,
@@ -17,6 +17,7 @@ import { formatDate } from "../../../utils/formatDate";
 import ModalBackdrop from "../../common/ModalBackdrop";
 import CancelOrderModal from "../../modals/CancelOrderModal";
 import OrderGeneralActionModal from "../../modals/OrderGeneralActionModal";
+import SuccessWindow from "../../windows/SuccessWindow";
 
 const OrderItem = ({ orderItem }) => {
   return (
@@ -71,6 +72,7 @@ const OrderCard = ({
             <h2 className="order-card-header">
               Order{" "}
               <span className="order-card-order-id">#{order?.orderID}</span>
+              <span> by {order?.firstName} {order?.lastName} </span>
             </h2>
             <p className="order-card-date">{formatDate(order?.orderDate)}</p>
           </div>
@@ -149,10 +151,12 @@ const Orders = () => {
   const [currentOrderId, setCurrentOrderId] = useState(null);
   const { isAuthenticated, user } = useAuth();
   const navigate = useNavigate();
+  const location = useLocation();
   const [showCancelModal, setShowCancelModal] = useState(false);
   const [showOrderGeneralActionModal, setShowOrderGeneralActionModal] =
     useState(false);
   const [orderGeneralActionType, setOrderGeneralActionType] = useState("");
+  const [shippedOrderId, setShippedOrderId] = useState(null);
 
   const handleChange = (panel) => (event, isExpanded) => {
     setExpanded(isExpanded ? panel : false);
@@ -190,6 +194,14 @@ const Orders = () => {
       ),
     );
   };
+
+  useEffect(() => {
+    if (location.state?.shippedOrderId) {
+      setShippedOrderId(location.state.shippedOrderId);
+      window.scrollTo({ top: 0, behavior: "smooth" });
+      window.history.replaceState({}, "");
+    }
+  }, [location.state]);
 
   useEffect(() => {
     const performFetch = async () => {
@@ -233,6 +245,10 @@ const Orders = () => {
               await handleDismissRefund();
             } else {
               await handleUpdateStatus(orderGeneralActionType);
+              if (orderGeneralActionType === "Shipped") {
+                setShippedOrderId(currentOrderId);
+                window.scrollTo({ top: 0, behavior: "smooth" });
+              }
             }
             setShowOrderGeneralActionModal(false);
           }}
@@ -248,6 +264,14 @@ const Orders = () => {
         <LeftArrowIcon />
         <p>Your Account</p>
       </button>
+      {shippedOrderId && (
+        <SuccessWindow
+          message="Order shipped successfully"
+          actionLabel="View order"
+          onAction={() => navigate(`/vendor/order-details/${shippedOrderId}`, { state: { from: "/orders" } })}
+          onClose={() => setShippedOrderId(null)}
+        />
+      )}
       <div className="order-card-container">
         {orders.map((order, idx) => {
           const panelId = `panel${idx}`;

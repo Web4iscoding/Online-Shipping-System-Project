@@ -16,16 +16,16 @@ const CancelOrderModal = ({
 
   return (
     <div className="cancel-order-container">
-      <button className="cancel-order-close-button" onClick={onClose}>
-        <CloseIcon />
-      </button>
       {!isNextStep && (
-        <div>
+        <div className="cancel-order-header">
           <AlertCircleFilledIcon size={2} />
           <div>
             <h2>{title}</h2>
             <p>{subtitle}</p>
           </div>
+          <button className="cancel-order-close-button" onClick={onClose}>
+            <CloseIcon />
+          </button>
         </div>
       )}
       {isNextStep && (
@@ -36,18 +36,21 @@ const CancelOrderModal = ({
             onConfirm(reason);
           }}
         >
-          <h2>{reasonPrompt}</h2>
+          <div className="cancel-order-header">
+            <h2>{reasonPrompt}</h2>
+            <button type="button" className="cancel-order-close-button" onClick={onClose}>
+              <CloseIcon />
+            </button>
+          </div>
           <textarea
             className="cancel-order-reason-textarea"
             value={reason}
             onChange={(e) => setReason(e.target.value)}
             required
           ></textarea>
-          {isNextStep && (
-            <button type="submit" id="cancel-order-confirm-button">
-              {submitLabel}
-            </button>
-          )}
+          <button type="submit" id="cancel-order-confirm-button">
+            {submitLabel}
+          </button>
         </form>
       )}
       {!isNextStep && (

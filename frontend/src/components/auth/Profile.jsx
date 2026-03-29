@@ -14,6 +14,7 @@ import {
   TruckCheckIcon,
   StoreEditIcon,
   EyeOffIcon,
+  ChartBarIcon,
 } from "../../assets/icons";
 import { replace, useNavigate } from "react-router-dom";
 import "../../styles/Profile.css";
@@ -136,6 +137,18 @@ const VendorProfile = ({ user }) => {
             <h3>Account Details</h3>
           </div>
           <p>Update your account information</p>
+        </button>
+      </div>
+      <div className="profile-card-container">
+        <button
+          className="profile-card"
+          onClick={() => navigate("/analytics")}
+        >
+          <div className="profile-card-title">
+            <ChartBarIcon size={1.3} />
+            <h3>Analytics</h3>
+          </div>
+          <p>View search trends, product views, and sales insights</p>
         </button>
       </div>
       <button className="logout" onClick={() => navigate("/logout")}>

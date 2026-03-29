@@ -1,36 +1,39 @@
-.cancel-order-container,
-.cancel-order-container * {
-  /* border: 1px solid red; */
-}
-
 .cancel-order-container {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 800px;
-  height: 300px;
+  width: 560px;
   background-color: white;
-  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
-  border-radius: 25px;
-  padding: 32px 32px;
+  box-shadow: var(--default-box-shadow);
+  border-radius: 16px;
+  padding: 32px;
   z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
 }
 
 .cancel-order-reason-field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 12px;
 }
 
 .cancel-order-reason-field textarea {
   resize: none;
   height: 160px;
-  padding: 8px;
+  padding: 12px;
   border: 1px solid var(--primary-color-light);
+  border-radius: 8px;
   outline: none;
   font: inherit;
 }
+
+.cancel-order-reason-field textarea:focus {
+  border-color: var(--primary-color);
+}
+
 .cancel-order-container > div svg * {
   color: var(--primary-color);
 }
@@ -39,10 +42,25 @@
   color: var(--primary-color);
 }
 
-.cancel-order-container > div:not(.cancel-order-reason-field) {
+.cancel-order-header {
   display: flex;
   gap: 16px;
-  align-items: center;
+  align-items: flex-start;
+}
+
+.cancel-order-header > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.cancel-order-header > div {
+  flex: 1;
+  min-width: 0;
+}
+
+.cancel-order-header > h2 {
+  flex: 1;
+  min-width: 0;
 }
 
 .cancel-order-container button {
@@ -55,22 +73,19 @@
 }
 
 .cancel-order-close-button {
-  position: absolute;
-  top: 20px;
-  right: 32px;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 2px;
 }
 
 #cancel-order-confirm-button {
-  position: absolute;
-  bottom: 20px;
-  right: 32px;
   appearance: none;
   cursor: pointer;
   text-decoration: underline;
   color: var(--primary-color-light);
+  align-self: flex-end;
 }
 
 #cancel-order-confirm-button:hover {
@@ -81,26 +96,11 @@
 @media (max-width: 768px) {
   .cancel-order-container {
     width: calc(100vw - 32px);
-    height: auto;
-    min-height: unset;
-    padding: 20px 16px;
-    border-radius: 16px;
+    padding: 24px 16px;
   }
 
   .cancel-order-reason-field textarea {
     height: 120px;
     font-size: 14px;
-  }
-
-  .cancel-order-close-button {
-    top: 16px;
-    right: 16px;
-  }
-
-  #cancel-order-confirm-button {
-    position: static;
-    margin-top: 16px;
-    display: block;
-    text-align: right;
   }
 }

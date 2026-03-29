@@ -12,10 +12,7 @@ const OrderGeneralActionModal = ({
 }) => {
   return (
     <div className="order-general-action-container">
-      <button className="order-general-action-close-button" onClick={onClose}>
-        <CloseIcon />
-      </button>
-      <div>
+      <div className="order-general-action-header">
         <AlertCircleFilledIcon size={2} />
         <h2>
           {type === "Holding" &&
@@ -25,9 +22,12 @@ const OrderGeneralActionModal = ({
           {type === "Cancelled" &&
             "Do you want to approve the incoming refund request?"}
         </h2>
+        <button className="order-general-action-close-button" onClick={onClose}>
+          <CloseIcon />
+        </button>
       </div>
       {type === "Cancelled" && (
-        <div>
+        <div className="order-general-action-refund">
           <img
             src={orderData?.customer_profileImage ? `${API_BASE}/media/${orderData?.customer_profileImage}` : blank_pfp}
             className="refund-modal-customer-avatar"

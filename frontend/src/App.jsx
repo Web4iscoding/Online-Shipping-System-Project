@@ -47,6 +47,7 @@ import VendorOrderDetails from "./components/auth/vendor/VendorOrderDetails";
 import Checkout from "./components/cart/Checkout";
 import CustomerOrderDetails from "./components/auth/customer/CustomerOrderDetails";
 import VendorAccountDetails from "./components/auth/vendor/VendorAccountDetails";
+import Analytics from "./components/auth/vendor/Analytics";
 import ScrollToTop from "./components/common/ScrollToTop";
 import SearchModal from "./components/modals/SearchModal";
 import ModalBackdrop from "./components/common/ModalBackdrop";
@@ -102,6 +103,7 @@ const AppContent = () => {
           <Route path="/create-discount/:productId" element={<CreateDiscount />} />
           <Route path="/shipped-orders" element={<ShippedOrders />} />
           <Route path="/store-details" element={<StoreDetails />} />
+          <Route path="/analytics" element={<Analytics />} />
           <Route path="/product-list/:filter" element={<ProductList />} />
           <Route path="/product-list/:type/:name" element={<ProductList />} />
           <Route path="/product/:id" element={<ProductDetail />} />

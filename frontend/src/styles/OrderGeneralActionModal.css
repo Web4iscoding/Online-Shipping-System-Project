@@ -1,45 +1,62 @@
-.order-general-action-container * {
-  /* border: 1px solid red; */
-}
-
 .order-general-action-container {
   position: fixed;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  width: 800px;
-  height: 300px;
+  width: 560px;
   background-color: white;
-  box-shadow: 0 1px 3px hsla(0, 0%, 0%, 0.2);
-  border-radius: 25px;
-  padding: 32px 32px;
+  box-shadow: var(--default-box-shadow);
+  border-radius: 16px;
+  padding: 32px;
   z-index: 1000;
-}
-.order-general-action-container > div {
   display: flex;
-  gap: 16px;
-  align-items: center;
-  margin-bottom: 16px;
+  flex-direction: column;
+  gap: 24px;
 }
 
-.order-general-action-container > div svg * {
+.order-general-action-header {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.order-general-action-header > svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.order-general-action-header svg * {
   color: var(--primary-color);
 }
 
+.order-general-action-header h2 {
+  flex: 1;
+  min-width: 0;
+}
+
 .order-general-action-close-button {
-  position: absolute;
-  top: 20px;
-  right: 32px;
+  flex-shrink: 0;
   display: flex;
   justify-content: center;
   align-items: center;
+  margin-top: 2px;
+}
+
+.order-general-action-refund {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.order-general-action-refund svg * {
+  color: var(--primary-color);
 }
 
 #order-general-action-button-group {
-  position: absolute;
-  bottom: 20px;
-  right: 32px;
-  align-items: flex-end;
+  display: flex;
+  gap: 16px;
+  justify-content: flex-end;
+  align-items: center;
 }
 
 #order-general-action-confirm-button {
@@ -48,6 +65,7 @@
   text-decoration: underline;
   color: var(--primary-color-light);
 }
+
 #order-general-action-confirm-button:hover {
   color: var(--primary-color-darker);
 }
@@ -62,10 +80,11 @@
 }
 
 .refund-modal-customer-avatar {
-  width: 60px;
-  height: 60px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   object-fit: cover;
+  flex-shrink: 0;
   border: 1px solid var(--primary-color-light);
 }
 
@@ -75,7 +94,7 @@
   min-width: 0;
   box-sizing: border-box;
   padding: 16px;
-  border-radius: 15px;
+  border-radius: 8px;
   overflow-wrap: break-word;
 }
 
@@ -93,30 +112,16 @@
 @media (max-width: 768px) {
   .order-general-action-container {
     width: calc(100vw - 32px);
-    height: auto;
-    min-height: unset;
-    padding: 20px 16px;
-    border-radius: 16px;
-  }
-
-  .order-general-action-close-button {
-    top: 16px;
-    right: 16px;
+    padding: 24px 16px;
   }
 
   .refund-modal-customer-avatar {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
   }
 
   .refund-modal-reason {
     padding: 12px;
     font-size: 14px;
-  }
-
-  #order-general-action-button-group {
-    position: static;
-    margin-top: 16px;
-    justify-content: flex-end;
   }
 }

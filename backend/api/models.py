@@ -341,3 +341,38 @@ class DeviceToken(models.Model):
 
     def __str__(self):
         return f"DeviceToken: {self.user.username} ({self.key[:8]}…)"
+
+
+# Tracks search queries made by users for vendor analytics.
+class SearchQuery(models.Model):
+    query = models.CharField(max_length=500)
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='search_queries')
+    resultCount = models.IntegerField(default=0)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"Search: '{self.query}' ({self.resultCount} results)"
+
+
+# Tracks product detail page views for vendor analytics.
+class ProductView(models.Model):
+    SOURCE_CHOICES = [
+        ('search', 'Search'),
+        ('browse', 'Browse'),
+        ('direct', 'Direct'),
+    ]
+
+    product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_views')
+    user = models.ForeignKey(User, on_delete=models.SET_NULL, null=True, blank=True, related_name='product_views')
+    source = models.CharField(max_length=20, choices=SOURCE_CHOICES, default='browse')
+    searchQuery = models.CharField(max_length=500, blank=True)
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-timestamp']
+
+    def __str__(self):
+        return f"View: {self.product.productName} ({self.source})"

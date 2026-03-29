@@ -34,3 +34,15 @@
 #success-window-close > {
   color: var(--success-color-dark);
 }
+
+.success-window-action {
+  appearance: none;
+  border: none;
+  background: none;
+  color: var(--success-color-dark);
+  font-weight: 600;
+  text-decoration: underline;
+  cursor: pointer;
+  padding: 0;
+  font-size: inherit;
+}

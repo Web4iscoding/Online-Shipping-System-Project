@@ -25,6 +25,8 @@ const ProductCard = ({
   productName = "Lorem Ipsum Dolor Sit Amet",
   productPrice,
   quantity,
+  source,
+  searchQuery,
 }) => {
   const navigate = useNavigate();
   const soldOut = quantity !== undefined && quantity <= 0;
@@ -33,7 +35,7 @@ const ProductCard = ({
     <div className="product-list-card">
       <button
         className="product-list-card-image-container"
-        onClick={() => navigate(`/product/${productID}`)}
+        onClick={() => navigate(`/product/${productID}`, { state: { source: source || "browse", searchQuery: searchQuery || "" } })}
       >
         {soldOut && <span className="sold-out-badge">Sold Out</span>}
         <img className="product-list-card-image" src={thumbnailURL}></img>
@@ -283,7 +285,9 @@ const ProductList = () => {
                 <p>No products found.</p>
               </div>
             )}
-            {products.map((product, index) => (
+            {products.map((product, index) => {
+              const { type: filterType, value: filterValue } = parseFilter();
+              return (
               <ProductCard
                 key={index}
                 thumbnailURL={
@@ -295,8 +299,11 @@ const ProductList = () => {
                 productID={product.productID}
                 productPrice={product.discounted_price ?? product.price}
                 quantity={product.quantity}
+                source={filterType === "search" ? "search" : "browse"}
+                searchQuery={filterType === "search" ? filterValue : ""}
               />
-            ))}
+              );
+            })}
             {Array.from({ length: placeholderCount }).map((_, index) => (
               <PlaceholderCard key={`placeholder-${index}`} />
             ))}
