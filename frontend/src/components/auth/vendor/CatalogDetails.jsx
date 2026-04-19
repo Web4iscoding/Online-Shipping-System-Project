@@ -54,14 +54,14 @@ const CatalogDetails = () => {
       const categoriesData = await CategoriesAPI.list();
 
       // Sort brands: "Others" at the end, rest alphabetically
-      const sortedBrands = brandsData.results.sort((a, b) => {
+      const sortedBrands = (brandsData.results || brandsData).sort((a, b) => {
         if (a.brandName.toLowerCase() === "others") return 1;
         if (b.brandName.toLowerCase() === "others") return -1;
         return a.brandName.localeCompare(b.brandName);
       });
 
       // Sort categories: "Others" at the end, rest alphabetically
-      const sortedCategories = categoriesData.results.sort((a, b) => {
+      const sortedCategories = (categoriesData.results || categoriesData).sort((a, b) => {
         if (a.categoryName.toLowerCase() === "others") return 1;
         if (b.categoryName.toLowerCase() === "others") return -1;
         return a.categoryName.localeCompare(b.categoryName);

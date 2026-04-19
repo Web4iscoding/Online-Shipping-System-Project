@@ -168,7 +168,7 @@ const ProductList = () => {
         if (type === "brand") {
           const brands = await brandsAPI.list();
           if (!isMounted) return;
-          const match = brands.results.find(
+          const match = (brands.results || brands).find(
             (brand) => brand.brandName?.toLowerCase() === value.toLowerCase(),
           );
 
@@ -194,7 +194,7 @@ const ProductList = () => {
         if (type === "category") {
           const categories = await categoriesAPI.list();
           if (!isMounted) return;
-          const match = categories.results.find(
+          const match = (categories.results || categories).find(
             (category) =>
               category.categoryName?.toLowerCase() === value.toLowerCase(),
           );

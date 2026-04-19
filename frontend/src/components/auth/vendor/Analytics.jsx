@@ -1,8 +1,9 @@
 import { useState, useEffect } from "react";
 import { useAuth } from "../../../AuthContext";
 import { useNavigate } from "react-router-dom";
-import { vendor as vendorAPI } from "../../../api";
+import { vendor as vendorAPI, API_BASE } from "../../../api";
 import { LeftArrowIcon, ChartBarIcon } from "../../../assets/icons";
+import noImage from "../../../assets/no_image_available.jpg";
 import "../../../styles/Analytics.css";
 import LoadingIndicator from "../../common/LoadingIndicator";
 import { BarChart } from "@mui/x-charts/BarChart";
@@ -67,7 +68,7 @@ const Analytics = () => {
     );
   }
 
-  const { summary, topSearchQueries, topWishlisted, productViewTrends, topProducts, revenueByDay, categoryBreakdown, conversionFunnel } = data;
+  const { summary, topSearchQueries, topWishlisted, productViewTrends, topProducts, revenueByDay, categoryBreakdown, conversionFunnel, recommendedDiscounts } = data;
 
   const chartColors = [
     "hsl(232, 50%, 50%)",
@@ -314,6 +315,41 @@ const Analytics = () => {
           </div>
         ) : (
           <p className="analytics-empty">No conversion data yet.</p>
+        )}
+      </div>
+
+      {/* Recommended Discounts */}
+      <div className="analytics-section">
+        <h3 className="analytics-section-title">Recommended Discounts</h3>
+        <p className="analytics-section-subtitle">Products with high interest but low conversions — setting a discount may help boost sales.</p>
+        {recommendedDiscounts && recommendedDiscounts.length > 0 ? (
+          <div className="analytics-rec-list">
+            {recommendedDiscounts.map((p) => (
+              <button
+                key={p.productID}
+                className="analytics-rec-card"
+                onClick={() => navigate(`/create-discount/${p.productID}`)}
+              >
+                <img
+                  className="analytics-rec-image"
+                  src={p.image ? `${API_BASE}${p.image}` : noImage}
+                  alt={p.name}
+                />
+                <div className="analytics-rec-info">
+                  <p className="analytics-rec-name">{p.name}</p>
+                  <p className="analytics-rec-price">${p.price.toFixed(2)}</p>
+                </div>
+                <div className="analytics-rec-stats">
+                  <span>{p.views} views</span>
+                  <span>{p.wishlists} wishlisted</span>
+                  <span>{p.cartAdds} carted</span>
+                  <span>{p.orders} ordered</span>
+                </div>
+              </button>
+            ))}
+          </div>
+        ) : (
+          <p className="analytics-empty">No discount recommendations at this time.</p>
         )}
       </div>
     </div>

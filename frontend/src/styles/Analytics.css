@@ -12,7 +12,7 @@
   gap: 24px;
 }
 
-.analytics-container button {
+.analytics-container button:not(.analytics-rec-card) {
   appearance: none;
   background: none;
   font: inherit;
@@ -124,6 +124,108 @@
 
 .analytics-half {
   min-width: 0;
+}
+
+/* Recommended Discounts */
+.analytics-section {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.analytics-section-title {
+  font-size: 16px;
+}
+
+.analytics-section-subtitle {
+  font-size: 14px;
+  color: var(--primary-color-dark);
+}
+
+.analytics-rec-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.analytics-rec-card {
+  background: none;
+  font: inherit;
+  color: inherit;
+  border: 1px solid var(--primary-color-light);
+  border-radius: 0;
+  padding: 24px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  width: 100%;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s;
+}
+
+.analytics-rec-card:hover {
+  border-color: var(--primary-color);
+}
+
+.analytics-rec-image {
+  width: 80px;
+  height: 80px;
+  object-fit: cover;
+  flex-shrink: 0;
+  background: var(--primary-color-lighter);
+  border: 1px solid var(--primary-color-lighter);
+}
+
+.analytics-rec-info {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  flex: 1;
+  min-width: 0;
+}
+
+.analytics-rec-name {
+  font-size: 16px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.analytics-rec-price {
+  font-size: 14px;
+  color: var(--primary-color-dark);
+}
+
+.analytics-rec-stats {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  font-size: 12px;
+  color: var(--primary-color-dark);
+  flex-shrink: 0;
+}
+
+.analytics-rec-stats span {
+  padding: 2px 8px;
+  border: 1px solid var(--primary-color-light);
+  border-radius: 12px;
+  white-space: nowrap;
+}
+
+@media (max-width: 768px) {
+  .analytics-rec-card {
+    flex-wrap: wrap;
+  }
+
+  .analytics-rec-image {
+    width: 64px;
+    height: 64px;
+  }
+
+  .analytics-rec-stats {
+    width: 100%;
+  }
 }
 
 /* ── Responsive ─────────────────────────── */

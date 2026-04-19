@@ -349,6 +349,7 @@ class BrandViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving brands."""
     queryset = Brand.objects.all()
     serializer_class = BrandSerializer
+    pagination_class = None
     ordering = ['brandName']
 
 
@@ -356,6 +357,7 @@ class CategoryViewSet(viewsets.ReadOnlyModelViewSet):
     """ViewSet for listing and retrieving categories."""
     queryset = Category.objects.all()
     serializer_class = CategorySerializer
+    pagination_class = None
     ordering = ['categoryName']
 
 
@@ -1611,6 +1613,64 @@ class VendorStoreViewSet(viewsets.ViewSet):
             for w in top_wishlisted_qs
         ]
 
+        # --- Recommended discounts scoring ---
+        # Build per-product scores from views, wishlists, cart adds, and low conversion
+        product_view_counts = dict(
+            ProductView.objects.filter(product__in=product_ids, timestamp__gte=start_date)
+            .values('product').annotate(c=Count('id')).values_list('product', 'c')
+        )
+        product_wishlist_counts = dict(
+            WishlistItem.objects.filter(productID__in=product_ids)
+            .values('productID').annotate(c=Count('wishlistItemID')).values_list('productID', 'c')
+        )
+        product_cart_counts = dict(
+            CartItem.objects.filter(productID__in=product_ids, addedTime__gte=start_date)
+            .values('productID').annotate(c=Count('id')).values_list('productID', 'c')
+        )
+        product_order_counts = dict(
+            OrderItem.objects.filter(productID__in=product_ids, orderID__orderDate__gte=start_date)
+            .values('productID').annotate(c=Count('orderItemID')).values_list('productID', 'c')
+        )
+        # Products with an active promotion already don't need a recommendation
+        now = timezone.now()
+        active_promo_ids = set(
+            Promotion.objects.filter(
+                productID__in=product_ids, status='Active',
+                startDate__lte=now, endDate__gte=now,
+            ).values_list('productID', flat=True)
+        )
+
+        scored_products = []
+        for p in store_products:
+            pid = p.productID
+            if pid in active_promo_ids:
+                continue
+            views = product_view_counts.get(pid, 0)
+            wishlists = product_wishlist_counts.get(pid, 0)
+            carts = product_cart_counts.get(pid, 0)
+            orders = product_order_counts.get(pid, 0)
+            # Score: high interest but low purchases = good discount candidate
+            # Views (1pt each) + Wishlists (3pt) + Cart adds (2pt) - Orders (5pt penalty)
+            score = views * 1 + wishlists * 3 + carts * 2 - orders * 5
+            if score <= 0:
+                continue
+            # Get primary image
+            media = p.media.filter(isPrimary=True).first() or p.media.first()
+            image_url = media.mediaURL.url if media else None
+            scored_products.append({
+                'productID': pid,
+                'name': p.productName,
+                'price': float(p.price),
+                'image': image_url,
+                'score': score,
+                'views': views,
+                'wishlists': wishlists,
+                'cartAdds': carts,
+                'orders': orders,
+            })
+        scored_products.sort(key=lambda x: x['score'], reverse=True)
+        recommended_discounts = scored_products[:10]
+
         return Response({
             'summary': {
                 'totalViews': total_views,
@@ -1629,6 +1689,7 @@ class VendorStoreViewSet(viewsets.ViewSet):
                 'cartAdds': total_cart_adds,
                 'orders': total_orders,
             },
+            'recommendedDiscounts': recommended_discounts,
         })
 
 

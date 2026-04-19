@@ -95,9 +95,9 @@ const Catalog = () => {
   const fetchProducts = async (searchQuery) => {
     const byIdMatch = searchQuery.trim().match(/^byID:(\d+)$/i);
     if (byIdMatch) {
-      const targetId = Number(byIdMatch[1]);
+      const substring = byIdMatch[1];
       const allProducts = await vendorAPI.myProducts("");
-      setProducts(allProducts.filter((p) => p.productID === targetId));
+      setProducts(allProducts.filter((p) => String(p.productID).includes(substring)));
     } else {
       const products = await vendorAPI.myProducts(searchQuery);
       setProducts(products);

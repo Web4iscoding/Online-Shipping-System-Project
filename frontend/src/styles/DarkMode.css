@@ -666,6 +666,32 @@ html.dark .analytics-empty {
   color: var(--dm-text-muted);
 }
 
+html.dark .analytics-section-subtitle {
+  color: var(--dm-text-muted);
+}
+
+html.dark .analytics-rec-card {
+  background-color: var(--dm-surface);
+  border-color: var(--dm-border);
+}
+
+html.dark .analytics-rec-card:hover {
+  border-color: var(--dm-text-muted);
+}
+
+html.dark .analytics-rec-image {
+  background-color: var(--dm-bg);
+  border-color: var(--dm-border);
+}
+
+html.dark .analytics-rec-stats {
+  color: var(--dm-text-muted);
+}
+
+html.dark .analytics-rec-stats span {
+  border-color: var(--dm-border);
+}
+
 html.dark .MuiChartsAxis-tickLabel,
 html.dark .MuiChartsAxis-label {
   fill: var(--dm-text) !important;
