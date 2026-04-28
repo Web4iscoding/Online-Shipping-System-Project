@@ -30,6 +30,8 @@ import AccordionSummary from "@mui/material/AccordionSummary";
 import AccordionDetails from "@mui/material/AccordionDetails";
 import blank_pfp from "../assets/blank_pfp.png";
 import noImage from "../assets/no_image_available.jpg";
+import salesImg from "../assets/Sales.jpg";
+import inStockImg from "../assets/In_Stock.jpg";
 import Notifications from "./modals/Notifications";
 import ModalBackdrop from "./common/ModalBackdrop";
 import DarkModeToggle from "./DarkModeToggle";
@@ -380,12 +382,32 @@ export const Navigation = ({ setShowSearchModal }) => {
                 className="mega-dropdown-image-placeholder"
                 onClick={() => navigate("/product-list/sale")}
                 aria-label="Sale"
-              />
+                style={{
+                  backgroundImage: `url(${salesImg})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ color: "#fff", fontWeight: 700, fontSize: "1.25rem", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>Sales</span>
+              </button>
               <button
                 className="mega-dropdown-image-placeholder"
                 onClick={() => navigate("/product-list/in-stock")}
                 aria-label="In Stock"
-              />
+                style={{
+                  backgroundImage: `url(${inStockImg})`,
+                  backgroundSize: "cover",
+                  backgroundPosition: "center",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                }}
+              >
+                <span style={{ color: "#fff", fontWeight: 700, fontSize: "1.25rem", textShadow: "0 1px 4px rgba(0,0,0,0.7)" }}>In Stock</span>
+              </button>
             </div>
           </div>
         )}

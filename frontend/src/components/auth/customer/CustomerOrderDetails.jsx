@@ -112,6 +112,11 @@ const CustomerOrderDetails = () => {
             </p>
           )}
           <p className="customer-order-id">Order ID: #{orderData?.orderID}</p>
+          {orderData?.status === "Cancelled" && orderData?.cancellationReason && (
+            <p className="customer-order-date">
+              Cancellation Reason: {orderData.cancellationReason}
+            </p>
+          )}
         </div>
         <div className="customer-order-details">
           {orderData?.items?.map((item, index) => (
